@@ -1,0 +1,100 @@
+[
+    {
+        "text_widget_id": 3037181360,
+        "sequence": "EditorTextCreated",
+        "editor_id": 3037093360,
+        "time": "2017-11-24T10:44:42.093150",
+        "editor_class": "Editor",
+        "text_widget_class": "CodeViewText"
+    },
+    {
+        "text_widget_id": 3037181360,
+        "sequence": "Open",
+        "editor_id": 3037093360,
+        "time": "2017-11-24T10:44:42.098705",
+        "filename": "/media/pi/Lehd'R/ADXL362-RPi-master/examples/example_read_raw.py",
+        "editor_class": "Editor",
+        "text_widget_class": "CodeViewText"
+    },
+    {
+        "text_widget_id": 3037181360,
+        "index1": "1.0",
+        "time": "2017-11-24T10:44:43.118834",
+        "text_widget_class": "CodeViewText",
+        "sequence": "TextDelete",
+        "index2": "2.0"
+    },
+    {
+        "text_widget_id": 3037181360,
+        "tags": "()",
+        "sequence": "TextInsert",
+        "time": "2017-11-24T10:44:43.272743",
+        "text": "############################################################\n### Example for Communicating with ADXL362 Accelerometer ###\n### for Raspberry Pi using ADXL362.py                    ###\n###                                                      ###\n### Authors: Sam Zeckendorf                              ###\n###          Nathan Tarrh                                ###\n###    Date: 3/29/2014                                   ###\n############################################################\n\nimport ../ADXL362\nimport time\n\naccel = ADXL362.ADXL362()\naccel.begin_measure()\n\nwhile True:\n    print accel.read_xyz()\n    time.sleep(.01)\n",
+        "index": "1.0",
+        "text_widget_class": "CodeViewText"
+    },
+    {
+        "view_id": 3037046224,
+        "sequence": "ShowView",
+        "time": "2017-11-24T10:44:43.434560",
+        "view_class": "ShellView"
+    },
+    {
+        "widget_id": 3058549360,
+        "sequence": "<FocusIn>",
+        "time": "2017-11-24T10:44:46.412233",
+        "widget_class": "Workbench"
+    },
+    {
+        "text_widget_id": 3037046992,
+        "tags": "('welcome',)",
+        "sequence": "TextInsert",
+        "time": "2017-11-24T10:44:46.513470",
+        "text": "Python 3.4.2 (/usr/bin/python3)",
+        "text_widget_context": "shell",
+        "index": "1.0",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037046992,
+        "tags": "('io',)",
+        "sequence": "TextInsert",
+        "time": "2017-11-24T10:44:46.524873",
+        "text": "\n",
+        "text_widget_context": "shell",
+        "index": "1.31",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037046992,
+        "tags": "('toplevel', 'prompt')",
+        "sequence": "TextInsert",
+        "time": "2017-11-24T10:44:46.532876",
+        "text": ">>> ",
+        "text_widget_context": "shell",
+        "index": "2.0",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "widget_id": 3017549520,
+        "sequence": "<Button-1>",
+        "time": "2017-11-24T10:44:49.511623",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "text_widget_id": 3037181360,
+        "sequence": "<Button-1>",
+        "time": "2017-11-24T10:44:57.375279",
+        "widget_class": "CodeViewText",
+        "widget_id": 3037181360,
+        "text_widget_class": "CodeViewText"
+    },
+    {
+        "text_widget_id": 3037181360,
+        "sequence": "<Button-1>",
+        "time": "2017-11-24T10:44:57.652411",
+        "widget_class": "CodeViewText",
+        "widget_id": 3037181360,
+        "text_widget_class": "CodeViewText"
+    }
+]

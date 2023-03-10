@@ -1,0 +1,2560 @@
+[
+    {
+        "sequence": "ShowView",
+        "time": "2018-03-17T19:01:21.813653",
+        "view_class": "HelpView",
+        "view_id": "HelpView"
+    },
+    {
+        "text_widget_id": 3037603664,
+        "text_widget_class": "CodeViewText",
+        "editor_id": 3037604592,
+        "sequence": "EditorTextCreated",
+        "time": "2018-03-17T19:01:22.435941",
+        "editor_class": "Editor"
+    },
+    {
+        "text_widget_id": 3037603664,
+        "text_widget_class": "CodeViewText",
+        "filename": "/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/mainIHM_ebauche_finale.py",
+        "editor_id": 3037604592,
+        "sequence": "Open",
+        "time": "2018-03-17T19:01:22.441957",
+        "editor_class": "Editor"
+    },
+    {
+        "text_widget_id": 3037603664,
+        "sequence": "TextDelete",
+        "index2": "2.0",
+        "text_widget_class": "CodeViewText",
+        "index1": "1.0",
+        "time": "2018-03-17T19:01:23.468471"
+    },
+    {
+        "text_widget_id": 3037603664,
+        "index": "1.0",
+        "text_widget_class": "CodeViewText",
+        "text": "import sys #impose par QT\nimport os\nfrom PyQt4.QtCore import * #impose par QT\nfrom PyQt4.QtGui import * #impose par QT\nfrom PyQt4 import *\nimport time  #pour nommer le fichier txt final\n\n\nfrom page_reglages import Ui_Reglages\nfrom page_acquisitionzaloeil import Ui_Acquisition\nfrom numpy import linspace\nfrom numpy import fft  #OU from scipy.fftpack import fft #on fait enuite uniquement fft(blabla)\n\n#pour l'accelero :\nimport Reglages_accelero         #nom du fichier python dont la fonction maj_reglages permet d'ecrire dans le registre les nouveaux reglages\nimport FIFO                 #FIFO.go() permet d'enregistrer le fifo\n\n\n##------------ Fenetre ACQUISITION avec relations\n\nclass Interface_Acquisition(QWidget): #pour une autre fenetre, ca peut etre QDialog ou QMainWindow ou QWidget\n    def __init__(self):\n        QWidget.__init__(self) #Appel explicite du constructeur de la classe mere, impose par python\n\n        #Instanciation et initialisation de l'interface Qt\n        self.ui = Ui_Acquisition() #class creee par Qt METTRE UN VRAI NOM\n        self.ui.setupUi(self)       #on lance la fonction definie dans la class\n\n        #initialisation parametres\n        global etat_comboBox_freq, etat_comboBox_accel, begin  #en global pour dialoguer entre acquisition et reglages\n\n        self.ui.checkBox_accelx.setChecked(True) #par defaut coche ---- setChecked ou setCheckState\n        self.ui.checkBox_accely.setChecked(True) #par defaut coche\n        self.ui.checkBox_accelz.setCheckState(False) #par defaut non coche\n        self.ui.comboBox_FourrierTempo.setCurrentIndex(0) #par defaut indice 0 donc temporel\n        self.ui.progressBar.setValue(0)  #pour dire quelle valeur mettre (de 0 a 100) ou .value() pour consulter\n        etat_comboBox_freq = 0 #par defaut 200Hz\n        etat_comboBox_accel = 0 #par defaut 2g\n        begin=True  #on commence\n        \n        self.init_listes() #initialise une premiere fois les listes\n        self.afficher() #pour un premier affichage du matplotlib vide mais avec legende etc\n        self.action_Reglages() #on part directement sur la page reglages (apres on revient et les relations sont crees)\n        \n        # definition relations\n        self.connect(self.ui.PushButton_Fermer, SIGNAL('clicked()'), self.action_Fermer)\n        self.connect(self.ui.PushButton_Nouveau, SIGNAL('clicked()'), self.action_Nouveau)\n        self.connect(self.ui.PushButton_Reglages, SIGNAL('clicked()'), self.action_Reglages)\n        self.connect(self.ui.PushButton_Exporter, SIGNAL('clicked()'), self.action_Exporter)\n        self.connect(self.ui.comboBox_FourrierTempo, SIGNAL('currentIndexChanged(int)'), self.action_modif_affichage)\n        self.connect(self.ui.checkBox_accelx, SIGNAL('clicked()'), self.action_modif_affichage) #ou stateChanged(int)\n        self.connect(self.ui.checkBox_accely, SIGNAL('clicked()'), self.action_modif_affichage)\n        self.connect(self.ui.checkBox_accelz, SIGNAL('clicked()'), self.action_modif_affichage)\n        \n    def action_Fermer(self):\n        global interface\n        print('go fermer')\n        interface=0 #sans espace\n        \n    def action_Nouveau(self):\n        print('go nouveau')\n        self.ui.progressBar.setValue(0) #mise a 0\n        self.acquerir()    \n        self.afficher()\n        self.ui.progressBar.setValue(100) #mise a 100 fictive\n        \n    def action_Reglages(self):\n        global interface2\n        print('go reglages')\n        interface2 = Interface_Reglages()\n        interface2.show()\n        \n    def action_Exporter(self):\n        print('go exporter')\n        self.name = '/home/pi/Documents/Mesures/'+time.strftime(\"%d:%m:%Y-%T\")+'.txt' # creation nom fichier txt avec jj:mm:aaaa-h:min:s\n        print('adresse fichier : ',self.name)\n        self.memorise_txt()\n        self.name = 'leafpad '+self.name\n        print(self.name)\n        os.system(self.name)  #pour ouvrir le fichier txt cree, l'utilisateur fait enregistrer sous sa cle usb\n        \n        \n    def action_modif_affichage(self):\n        print(self.ui.checkBox_accelx.checkState()) #renvoie 0 ou 2\n        print(self.ui.checkBox_accely.checkState())\n        print(self.ui.checkBox_accelz.checkState())\n        print(self.ui.comboBox_FourrierTempo.currentIndex())  # .currentText  ou .currentIndex(0 ou 1)\n        self.afficher()\n\n\n    def acquerir(self):\n        \"\"\"a pour but d'acquerir les donnees accelero et les rend fonctionnelles\"\"\"\n\n        #declenchement par amplitude avant\n        \n        self.init_listes() #on reinitialise les 3 listes d'accel\n        \n        Atot = FIFO.FIFO(384,1) #liste des triplets issus du fifo (384/2/3 = 64 donnees par axe)\n\n        N=len(Atot) #nb triplets mesures\n        print('Nb triplets acquis =',N)\n        fe = self.interpretation_param()[1]   #on prend freq echant\n        tmax = (N-1)/fe\n        \n        self.T = linspace(0,tmax,N)\n        self.F = linspace(0,fe,N)\n        self.F=self.F[0:N//2] #on coupe a la moitie Shannon\n\n        for i in range(N):\n            self.A1.append(Atot[i][0])  #ecriture accel en x\n            self.A2.append(Atot[i][1])\n            self.A3.append(Atot[i][2])\n\n        self.TF1=2*abs(fft.fft(self.A1))/N  #TF de l'acceleration en x\n        self.TF1=self.TF1[0:N//2]\n        self.TF2=2*abs(fft.fft(self.A2))/N  #TF de l'acceleration en y\n        self.TF2=self.TF2[0:N//2]\n        self.TF3=2*abs(fft.fft(self.A3))/N  #TF de l'acceleration en z\n        self.TF3=self.TF3[0:N//2]\n\n##        for i in range(N):   ##on raccourci les nombres en CS --- INUTILE SI ENTIERS\n##            self.T[i]=self.nCS(self.T[i])\n##            if i<N//2:\n##                self.F[i]=self.nCS(self.F[i])\n##                self.TF1[i]=self.nCS(self.TF1[i])\n##                self.TF2[i]=self.nCS(self.TF2[i])\n##                self.TF3[i]=self.nCS(self.TF3[i])\n        \n    def afficher(self):\n        \"\"\"affiche le graphe avec les courbes choisies\"\"\"\n        self.X1=[]\n        self.X2=[]\n        self.X3=[]\n        self.Y1=[] #on affichera tout le temps X1,X2,X3,Y1,Y2,Y3 quitte a etre vide, sont nos variables d'affiachage\n        self.Y2=[]\n        self.Y3=[]\n        self.c1=self.ui.checkBox_accelx.checkState() #lecture etat checkbox 0 ou 2\n        self.c2=self.ui.checkBox_accely.checkState()\n        self.c3=self.ui.checkBox_accelz.checkState()\n        self.c4=self.ui.comboBox_FourrierTempo.currentIndex() #1 pour Fourrier et 0 pour temporel\n        \n        if self.c1==2 and self.c4==0:  #si accelx coche et temporel\n            self.Y1=self.A1\n            self.X1=self.T\n        if self.c2==2 and self.c4==0:\n            self.Y2=self.A2\n            self.X2=self.T\n        if self.c3==2 and self.c4==0:\n            self.Y3=self.A3\n            self.X3=self.T\n\n        if self.c1==2 and self.c4==1:  #si accelx coche et Fourrier\n            self.Y1=self.TF1\n            self.X1=self.F\n        if self.c2==2 and self.c4==1:\n            self.Y2=self.TF2\n            self.X2=self.F\n        if self.c3==2 and self.c4==1:\n            self.Y3=self.TF3\n            self.X3=self.F\n\n            \n        self.ui.matplotlibwidget.axes.hold(False) #on tej le plot precedent et n'est pas ce qui supprime les titres  \n        self.ui.matplotlibwidget.axes.plot(self.X1,self.Y1,'r-')   # . pour avoir les points et - pour les relier --> par exemple'r.-'  \n        self.ui.matplotlibwidget.axes.hold(True) #on maintient\n        self.ui.matplotlibwidget.axes.plot(self.X2,self.Y2,'b-')\n        self.ui.matplotlibwidget.axes.hold(True)\n        self.ui.matplotlibwidget.axes.plot(self.X3,self.Y3,'g-')\n        \n        self.ui.matplotlibwidget.axes.set_title('Accelerations') #a repeter car supprimer par le replot\n        self.ui.matplotlibwidget.axes.set_ylabel('Amplitude') #ou xscale\n        self.ui.matplotlibwidget.axes.set_xlabel('t(s) ou f(Hz)')\n        \n        self.ui.matplotlibwidget.draw() ##important\n        \n    \n    \n    \n    def memorise_txt(self): #il faut avoir fait nouveau pour tester\n        \"\"\"passe les donnees dans un fichier txt\"\"\"\n        param = self.interpretation_param()\n        \n        fich=open(self.name,'w')\n        fich.write('gamme acceleration : +-')\n        fich.write(param[0])\n        fich.write('g ;    frequence echantillonnage : ')\n        fich.write(param[1])\n        fich.write('Hz\\n')\n        fich.write('t(s);Ax(m/s2);Ay(m/s2);Az(m/s2);F(Hz);TF(Ax);TF(Ay);TF(Az)\\n')\n        for i in range(len(self.T)):\n            a,b,c,d=str(self.T[i]),str(self.A1[i]),str(self.A2[i]),str(self.A3[i])\n            if i<len(self.F):\n                e,f,g,h=str(self.F[i]),str(self.TF1[i]),str(self.TF2[i]),str(self.TF3[i])\n            else:\n                e,f,g,h='','','',''\n            a,b,c,d,e,f,g,h=a.replace('.',','),b.replace('.',','),c.replace('.',','),d.replace('.',','),e.replace('.',','),f.replace('.',','),g.replace('.',','),h.replace('.',',') #on remplace . en , pour traitement excel\n            fich.write(a)\n            fich.write(';') ##avec ; tout le temps pour bien separer et avoir un passage propre sur excel\n            fich.write(b)\n            fich.write(';')\n            fich.write(c)\n            fich.write(';')\n            fich.write(d)\n            fich.write(';')\n            fich.write(e)\n            fich.write(';')\n            fich.write(f)\n            fich.write(';')\n            fich.write(g)\n            fich.write(';')\n            fich.write(h)\n            fich.write('\\n')\n        fich.close()\n\n\n    def init_listes(self):\n        '''initialise toutes les listes pour pouvoir les reecrire pour chaque nouveau'''\n\n        self.T =[]  #ensemble des temps\n        self.F=[]   #futur ensemble des frequences pour fft\n        self.A1=[]  #ensemble des accel en x\n        self.A2=[]  #ensemble des accel en y\n        self.A3=[]  #ensemble des accel en z\n        self.TF1 =[] #futur ensemble des TF pour A1\n        self.TF2 =[] #futur ensemble des TF pour A2\n        self.TF3 =[] #futur ensemble des TF pour A3\n \n    def nCS(self,nombre):     ##### INUTILE SI ON TRAITE DES NOMBRES ENTIERS OU AVEC PEU DE DECIMALES\n        \"\"\"reduit les chiffres signicatifs a n\"\"\"\n        n=3\n        facteur=10**n\n        return int(facteur*nombre)/facteur\n\n    def interpretation_param(self):\n        '''donne [accel,freq]'''\n        global etat_comboBox_freq, etat_comboBox_accel\n        param=[]\n        #test accel\n        if etat_comboBox_accel==0:  #2g\n            accel=2\n        elif etat_comboBox_accel==1:  #4g\n            accel=4\n        else:\n            accel=8\n        #test freq\n        if etat_comboBox_freq==0: #200Hz\n            freq=200\n        else:                       #400Hz\n            freq=400\n        param.append('accel')\n        param.append('freq')\n\n        return param\n\n\n#time.localtime()[0] pour avoir l'annee ou time.time() pour avoir le temps (s depuis 40 ans)\n\n\n\n          \n\n\n###----------------Fenetre REGLAGES avec relations\n        \nclass Interface_Reglages(QWidget): #pour une autre fenetre, ca peut etre QDialog ou QMainWindow ou QWidget\n    def __init__(self):\n        global begin\n        QWidget.__init__(self) #Appel explicite du constructeur de la classe mere, impose par python\n\n        #Instanciation et initialisation de l'interface Qt\n        self.ui2 = Ui_Reglages()\n        self.ui2.setupUi(self,begin)\n        \n        #initialisation combobox\n        self.ui2.comboBox_freq.setCurrentIndex(etat_comboBox_freq) #pour memoriser ce qui a ete fait avant\n        self.ui2.comboBox_accel.setCurrentIndex(etat_comboBox_accel)\n\n        self.connect(self.ui2.PushButton_retour, SIGNAL('clicked()'), self.action_retour)\n        self.connect(self.ui2.PushButton_valider, SIGNAL('clicked()'), self.action_valider)\n\n    def action_retour(self):\n        global interface2, begin, interface\n        print('go retour')\n        if not(begin):   #si on ne commence pas on peut faire retour\n            interface2=0 #sans enregistrer les modif\n        else:           #si on commence, retour est equivalent a quitter tout\n            interface=0\n            interface2=0\n        print(begin)\n\n    def action_valider(self):\n        global etat_comboBox_freq, etat_comboBox_accel, interface2, begin\n        print('go valider')\n        etat_comboBox_freq = self.ui2.comboBox_freq.currentIndex()\n        etat_comboBox_accel = self.ui2.comboBox_accel.currentIndex()\n        print(etat_comboBox_accel)\n        print(etat_comboBox_freq)\n        \n        Reglages_accelero.maj_reglages(etat_comboBox_accel,etat_comboBox_freq)  #on met a jour les reglages de l'accelero\n\n        begin=False   #on a donc fait un premier reglage\n        interface2=0\n\n    \n###Reglages.showFullScreen()\n###Reglages.showMaximized()\n\n#C:\\Users\\cyril\\Downloads\\WinPython-32bit-3.3.5.9\\python-3.3.5\\Lib\\site-packages\\PyQt4\\doc\\html   qcheckbox etc    \n\n\n\n###------------- Lesture du MAIN pour lancer l'algo\n\n#Test de l'application\nif __name__==\"__main__\":\n    appUI = QApplication(sys.argv) #Instanciation de l'application (pour intercepter les mouvements de souris etc...)\n    interface = Interface_Acquisition() #Instanciation de l'interface\n    #interface = Interface_Reglages()  #l'un ou l'autre pour les tests\n    ##interface.resize(680,320)\n    ##interface.showMaximized()  ##pas utile car n'est lu qu'une fois\n    interface.show() #Affichage de l'interface\n    sys.exit(appUI.exec_()) #Execution de l'application\n    \n \n",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:01:23.696632",
+        "tags": "()"
+    },
+    {
+        "sequence": "ShowView",
+        "time": "2018-03-17T19:01:23.854005",
+        "view_class": "ShellView",
+        "view_id": "ShellView"
+    },
+    {
+        "sequence": "ShowView",
+        "time": "2018-03-17T19:01:23.857610",
+        "view_class": "HelpView",
+        "view_id": "HelpView"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "1.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:01:33.423517",
+        "text": "Python 3.4.2 (/usr/bin/python3)",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('welcome',)"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "1.31",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:01:33.443749",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io',)"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "2.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:01:33.451544",
+        "text": ">>> ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('toplevel', 'prompt')"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:01:33.510748",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:01:45.500561",
+        "widget_id": 3037558832,
+        "widget_class": "Button"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "sequence": "TextDelete",
+        "index2": "3.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:01:45.632064",
+        "index1": "2.4",
+        "text_widget_context": "shell"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "2.4",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:01:45.638952",
+        "text": "%Run mainIHM_ebauche_finale.py\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('automagic', 'toplevel', 'command')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "sequence": "TextDelete",
+        "index2": "3.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:01:45.651667",
+        "index1": "3.0",
+        "text_widget_context": "shell"
+    },
+    {
+        "sequence": "MagicCommand",
+        "time": "2018-03-17T19:01:45.660161",
+        "cmd_line": "%Run mainIHM_ebauche_finale.py\n"
+    },
+    {
+        "sequence": "ShellCommand",
+        "time": "2018-03-17T19:01:47.416760",
+        "command_text": "%Run mainIHM_ebauche_finale.py\n"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "3.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:01:58.345227",
+        "text": "S",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout', 'vertically_spaced')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "3.1",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:01:58.352615",
+        "text": "oft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "4.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:01:58.827739",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "5.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:01:59.380542",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "6.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:01:59.919442",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "7.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:06.956934",
+        "text": "go reglages\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "time": "2018-03-17T19:02:07.224359",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "8.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:15.902620",
+        "text": "go valider\n0\n0\n00010100\n0x14\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "13.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:15.961676",
+        "text": "OK\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "14.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.532343",
+        "text": "go nouveau\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "15.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.594490",
+        "text": "Traceback (most recent call last):\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "16.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.600610",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "16.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.606488",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/mainIHM_ebauche_finale.py\", line 63, in action_Nouveau",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "16.125",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.612191",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "17.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.618432",
+        "text": "    self.acquerir()    \n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "18.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.624453",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "18.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.630534",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/mainIHM_ebauche_finale.py\", line 98, in acquerir",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "18.119",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.636198",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "19.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.642080",
+        "text": "    Atot = FIFO.FIFO(384,1) #liste des triplets issus du fifo (384/2/3 = 64 donnees par axe)\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "20.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.663877",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "20.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.669497",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/FIFO.py\", line 17, in FIFO",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "20.97",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.675497",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "21.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.681453",
+        "text": "    wmk=Watermark.watermarkRead()\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "22.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.687472",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "22.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.693713",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/Watermark.py\", line 41, in watermarkRead",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "22.111",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.699409",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "23.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.705415",
+        "text": "    return((int(bin(mesure0x28)[-4:-3])<<8)+mesure0x29)\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "24.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:18.711523",
+        "text": "ValueError: invalid literal for int() with base 10: ''\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "25.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:31.355822",
+        "text": "go exporter\nadresse fichier :  /home/pi/Documents/Mesures/17:03:2018-19:02:31.txt\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "27.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:31.384366",
+        "text": "leafpad /home/pi/Documents/Mesures/17:03:2018-19:02:31.txt\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "28.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:46.006509",
+        "text": "go fermer\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:02:53.018047",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "29.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:53.166634",
+        "text": "Traceback (most recent call last):\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "30.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:53.173486",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "30.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:53.179199",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/mainIHM_ebauche_finale.py\", line 322, in <module>",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "30.120",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:53.185240",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "31.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:53.191391",
+        "text": "    sys.exit(appUI.exec_()) #Execution de l'application\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "32.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:53.197255",
+        "text": "SystemExit: 0\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "33.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:02:55.245060",
+        "text": ">>> ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('toplevel', 'prompt', 'vertically_spaced')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "sequence": "<Button-1>",
+        "widget_class": "ShellText",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "widget_id": 3037532048,
+        "time": "2018-03-17T19:03:46.443462"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "text_widget_class": "CodeViewText",
+        "editor_id": 3017445008,
+        "sequence": "EditorTextCreated",
+        "time": "2018-03-17T19:03:46.640776",
+        "editor_class": "Editor"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "text_widget_class": "CodeViewText",
+        "filename": "/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/Watermark.py",
+        "editor_id": 3017445008,
+        "sequence": "Open",
+        "time": "2018-03-17T19:03:46.646443",
+        "editor_class": "Editor"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "2.0",
+        "text_widget_class": "CodeViewText",
+        "index1": "1.0",
+        "time": "2018-03-17T19:03:46.661162"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "1.0",
+        "text_widget_class": "CodeViewText",
+        "text": "# -*- coding: utf-8 -*-\n\"\"\"\nCreated on Fri May 18 09:15:36 2018\n\n@author: Utilisateur\n\"\"\"\nimport ADXL362\nimport spidev\nimport FuncWriteReg\n\naccel = ADXL362.ADXL362()\n\n\ndef watermark(status):\n    return(bool(status[-3]))\n\ndef waterWrite(value):  #value en decimal\n    #conversion en binaire\n    ##Half Above (9e bit)\n    HA=False\n    if value - 2^8 >=0:         #Si value type 1 XXXXXXXX\n        HA=True\n        value-=2**8\n    accel.spi.cshigh=False\n    mesure0x28=accel.spi_read_reg(0x28)         #Lecture des donnees en 0x28\n    accel.spi.cshigh=True\n    mes0x28bin=bin(mesure0x28)[2:]    #Conv en binaire en retirant le '0b'\n    mes0x28bin='0'*(8-len(mes0x28bin))+mes0x28bin      #Etendu a 8 bits\n    #Ecriture de HA sans changer les autres valeurs du registre\n    FuncWriteReg.Write(0x28,mesure0x28[0:4]+str(1*HA)+mesure0x28[5:])\n    \n    ##dernier octet\n    FuncWriteReg.Write(0x29,value)\n\ndef watermarkRead():\n    accel.spi.cshigh=False\n    mesure0x28=accel.spi_read_reg(0x28)         #Lecture des donnees en 0x28\n    mesure0x29=accel.spi_read_reg(0x29)         #Lecture des donnees en 0x29\n    accel.spi.cshigh=True\n    \n    return((int(bin(mesure0x28)[-4:-3])<<8)+mesure0x29)",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:03:46.723460",
+        "tags": "()"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "<Button-1>",
+        "widget_class": "CodeViewText",
+        "text_widget_class": "CodeViewText",
+        "time": "2018-03-17T19:03:52.899945",
+        "widget_id": 3017442992
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "41.42",
+        "text_widget_class": "CodeViewText",
+        "text": ",",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:04:03.549478",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "41.43",
+        "text_widget_class": "CodeViewText",
+        "text": "2",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:04:03.942339",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "text_widget_class": "CodeViewText",
+        "filename": "/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/Watermark.py",
+        "editor_id": 3017445008,
+        "sequence": "Save",
+        "time": "2018-03-17T19:04:06.766472",
+        "editor_class": "Editor"
+    },
+    {
+        "sequence": "Command",
+        "time": "2018-03-17T19:04:06.797876",
+        "command_id": "save_file",
+        "denied": "False"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:04:15.862335",
+        "widget_id": 3037466352,
+        "widget_class": "EditorNotebook"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:04:19.110528",
+        "widget_id": 3037558832,
+        "widget_class": "Button"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "sequence": "TextDelete",
+        "index2": "34.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:19.245791",
+        "index1": "33.4",
+        "text_widget_context": "shell"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "33.4",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:19.252580",
+        "text": "%Run mainIHM_ebauche_finale.py\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('automagic', 'toplevel', 'command')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "sequence": "TextDelete",
+        "index2": "34.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:19.267206",
+        "index1": "34.0",
+        "text_widget_context": "shell"
+    },
+    {
+        "sequence": "MagicCommand",
+        "time": "2018-03-17T19:04:19.275307",
+        "cmd_line": "%Run mainIHM_ebauche_finale.py\n"
+    },
+    {
+        "sequence": "ShellCommand",
+        "time": "2018-03-17T19:04:20.821263",
+        "command_text": "%Run mainIHM_ebauche_finale.py\n"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "34.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:32.124818",
+        "text": "S",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout', 'vertically_spaced')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "34.1",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:32.139647",
+        "text": "oft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "35.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:32.666322",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "36.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:33.223807",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "37.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:33.773096",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "38.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:40.729583",
+        "text": "go reglages",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "38.11",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:40.771243",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "time": "2018-03-17T19:04:41.112538",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "39.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:48.109893",
+        "text": "go valider\n0\n0\n00010100",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "42.8",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:48.177285",
+        "text": "\n0x14\nequal\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "45.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.831564",
+        "text": "go nouveau\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "46.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.868651",
+        "text": "Traceback (most recent call last):\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "47.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.876528",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "47.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.883813",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/mainIHM_ebauche_finale.py\", line 63, in action_Nouveau",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "47.125",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.891367",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "48.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.898861",
+        "text": "    self.acquerir()    \n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "49.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.906677",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "49.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.914221",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/mainIHM_ebauche_finale.py\", line 98, in acquerir",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "49.119",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.921588",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "50.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.929264",
+        "text": "    Atot = FIFO.FIFO(384,1) #liste des triplets issus du fifo (384/2/3 = 64 donnees par axe)\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "51.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.936759",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "51.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.944527",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/FIFO.py\", line 17, in FIFO",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "51.97",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.951729",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "52.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.960684",
+        "text": "    wmk=Watermark.watermarkRead()\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "53.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.968351",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "53.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.976086",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/Watermark.py\", line 41, in watermarkRead",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "53.111",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.983563",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "54.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:49.991239",
+        "text": "    return((int(bin(mesure0x28)[-4:-3])<<8,2)+mesure0x29)",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "54.57",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:50.008203",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "55.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:04:50.015689",
+        "text": "ValueError: invalid literal for int() with base 10: ''\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:04:57.570582",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:05:16.878700",
+        "widget_id": 3037466352,
+        "widget_class": "EditorNotebook"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "<Button-1>",
+        "widget_class": "CodeViewText",
+        "text_widget_class": "CodeViewText",
+        "time": "2018-03-17T19:05:18.110599",
+        "widget_id": 3017442992
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "None",
+        "text_widget_class": "CodeViewText",
+        "index1": "41.43",
+        "time": "2018-03-17T19:05:19.741456"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "None",
+        "text_widget_class": "CodeViewText",
+        "index1": "41.42",
+        "time": "2018-03-17T19:05:20.098144"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "56.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:05:20.472049",
+        "text": "KeyboardInterrupt: Forced reset",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "56.31",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:05:22.858289",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io',)"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "57.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:05:22.867339",
+        "text": ">>> ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('toplevel', 'prompt', 'vertically_spaced')"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "<Button-1>",
+        "widget_class": "CodeViewText",
+        "text_widget_class": "CodeViewText",
+        "time": "2018-03-17T19:05:23.507001",
+        "widget_id": 3017442992
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "41.38",
+        "text_widget_class": "CodeViewText",
+        "text": ",",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:05:25.666394",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "41.39",
+        "text_widget_class": "CodeViewText",
+        "text": "2",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:05:26.498212",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "text_widget_class": "CodeViewText",
+        "filename": "/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/Watermark.py",
+        "editor_id": 3017445008,
+        "sequence": "Save",
+        "time": "2018-03-17T19:05:41.853349",
+        "editor_class": "Editor"
+    },
+    {
+        "sequence": "Command",
+        "time": "2018-03-17T19:05:41.882549",
+        "command_id": "save_file",
+        "denied": "False"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "time": "2018-03-17T19:05:47.093340",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:05:47.268966",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "time": "2018-03-17T19:05:47.375259",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:05:53.580428",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:05:54.866840",
+        "widget_id": 3037466352,
+        "widget_class": "EditorNotebook"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:06:00.183977",
+        "widget_id": 3037558832,
+        "widget_class": "Button"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "sequence": "TextDelete",
+        "index2": "58.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:06:00.301763",
+        "index1": "57.4",
+        "text_widget_context": "shell"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "57.4",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:06:00.308786",
+        "text": "%Run mainIHM_ebauche_finale.py\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('automagic', 'toplevel', 'command')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "sequence": "TextDelete",
+        "index2": "58.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:06:00.323558",
+        "index1": "58.0",
+        "text_widget_context": "shell"
+    },
+    {
+        "sequence": "MagicCommand",
+        "time": "2018-03-17T19:06:00.331512",
+        "cmd_line": "%Run mainIHM_ebauche_finale.py\n"
+    },
+    {
+        "sequence": "ShellCommand",
+        "time": "2018-03-17T19:06:02.016327",
+        "command_text": "%Run mainIHM_ebauche_finale.py\n"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "58.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:06:13.193499",
+        "text": "S",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout', 'vertically_spaced')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "58.1",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:06:13.201226",
+        "text": "oft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "59.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:06:13.780113",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "60.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:06:14.271198",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "61.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:06:14.816158",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "62.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:06:21.831258",
+        "text": "go reglages\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "time": "2018-03-17T19:06:22.060028",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "63.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:06:29.470436",
+        "text": "go valider\n0\n0\n00010100\n0x14\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "68.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:06:29.544932",
+        "text": "equal\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "69.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.190891",
+        "text": "go nouveau\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "70.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.204747",
+        "text": "Traceback (most recent call last):\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "71.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.210705",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "71.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.217105",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/mainIHM_ebauche_finale.py\", line 63, in action_Nouveau",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "71.125",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.223093",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "72.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.229003",
+        "text": "    self.acquerir()    \n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "73.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.235404",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "73.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.245013",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/mainIHM_ebauche_finale.py\", line 98, in acquerir",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "73.119",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.251081",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "74.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.257164",
+        "text": "    Atot = FIFO.FIFO(384,1) #liste des triplets issus du fifo (384/2/3 = 64 donnees par axe)\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "75.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.263394",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "75.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.269451",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/FIFO.py\", line 17, in FIFO",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "75.97",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.275344",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "76.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.281408",
+        "text": "    wmk=Watermark.watermarkRead()\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "77.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.287506",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "77.2",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.293528",
+        "text": "File \"/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/Watermark.py\", line 41, in watermarkRead",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr', 'hyperlink')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "77.111",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.299657",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "78.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.305554",
+        "text": "    return((int(bin(mesure0x28)[-4:-3],2)<<8)+mesure0x29)\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "79.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:07:29.311639",
+        "text": "ValueError: invalid literal for int() with base 2: ''\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:07:44.191268",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:12:20.497524",
+        "widget_id": 3037466352,
+        "widget_class": "EditorNotebook"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "<Button-1>",
+        "widget_class": "CodeViewText",
+        "text_widget_class": "CodeViewText",
+        "time": "2018-03-17T19:14:42.806604",
+        "widget_id": 3017442992
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "37.15",
+        "text_widget_class": "CodeViewText",
+        "text": "b",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:15:11.811235",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "37.16",
+        "text_widget_class": "CodeViewText",
+        "text": "i",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:15:12.154781",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "37.17",
+        "text_widget_class": "CodeViewText",
+        "text": "n",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:15:12.186921",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "80.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:15:12.566994",
+        "text": "KeyboardInterrupt: Forced reset",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stderr')"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "37.18",
+        "text_widget_class": "CodeViewText",
+        "text": "(",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:15:13.139105",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "80.31",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:15:15.316375",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io',)"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "81.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:15:15.325397",
+        "text": ">>> ",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('toplevel', 'prompt', 'vertically_spaced')"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "37.43",
+        "text_widget_class": "CodeViewText",
+        "text": ")",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:15:21.641697",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "37.44",
+        "text_widget_class": "CodeViewText",
+        "text": "[",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:15:24.441565",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "37.45",
+        "text_widget_class": "CodeViewText",
+        "text": "2",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:15:25.705050",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "37.46",
+        "text_widget_class": "CodeViewText",
+        "text": ":",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:15:26.346158",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "37.47",
+        "text_widget_class": "CodeViewText",
+        "text": "]",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:15:27.687709",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "37.85",
+        "text_widget_class": "CodeViewText",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:09.755482",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.0",
+        "text_widget_class": "CodeViewText",
+        "text": "    ",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:09.806449",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.4",
+        "text_widget_class": "CodeViewText",
+        "text": "m",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:12.216545",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.5",
+        "text_widget_class": "CodeViewText",
+        "text": "e",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:12.565934",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.6",
+        "text_widget_class": "CodeViewText",
+        "text": "u",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:12.596029",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.7",
+        "text_widget_class": "CodeViewText",
+        "text": "u",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:12.674409",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.8",
+        "text_widget_class": "CodeViewText",
+        "text": "s",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:12.737260",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "None",
+        "text_widget_class": "CodeViewText",
+        "index1": "38.8",
+        "time": "2018-03-17T19:16:13.453813"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "None",
+        "text_widget_class": "CodeViewText",
+        "index1": "38.7",
+        "time": "2018-03-17T19:16:13.783239"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "None",
+        "text_widget_class": "CodeViewText",
+        "index1": "38.6",
+        "time": "2018-03-17T19:16:13.858327"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.6",
+        "text_widget_class": "CodeViewText",
+        "text": "s",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:14.712862",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.7",
+        "text_widget_class": "CodeViewText",
+        "text": "u",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:15.041609",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.8",
+        "text_widget_class": "CodeViewText",
+        "text": "r",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:15.119633",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.9",
+        "text_widget_class": "CodeViewText",
+        "text": "e",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:15.182025",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.10",
+        "text_widget_class": "CodeViewText",
+        "text": "0",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:17.208642",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.11",
+        "text_widget_class": "CodeViewText",
+        "text": "x",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:17.538264",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.12",
+        "text_widget_class": "CodeViewText",
+        "text": "2",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:17.569138",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.13",
+        "text_widget_class": "CodeViewText",
+        "text": "8",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:17.939640",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.14",
+        "text_widget_class": "CodeViewText",
+        "text": "=",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:19.544451",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.15",
+        "text_widget_class": "CodeViewText",
+        "text": "'",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:23.613138",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.16",
+        "text_widget_class": "CodeViewText",
+        "text": "0",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:24.012320",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.17",
+        "text_widget_class": "CodeViewText",
+        "text": "'",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:24.696048",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.18",
+        "text_widget_class": "CodeViewText",
+        "text": "*",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:26.200217",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.19",
+        "text_widget_class": "CodeViewText",
+        "text": "(",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:30.185860",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.20",
+        "text_widget_class": "CodeViewText",
+        "text": "8",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:31.368337",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.21",
+        "text_widget_class": "CodeViewText",
+        "text": "-",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:32.792417",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.22",
+        "text_widget_class": "CodeViewText",
+        "text": "l",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:33.864546",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.23",
+        "text_widget_class": "CodeViewText",
+        "text": "e",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:34.272238",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.24",
+        "text_widget_class": "CodeViewText",
+        "text": "n",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:34.302245",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.25",
+        "text_widget_class": "CodeViewText",
+        "text": "(",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:34.760348",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.26",
+        "text_widget_class": "CodeViewText",
+        "text": "m",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:37.064538",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.27",
+        "text_widget_class": "CodeViewText",
+        "text": "e",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:37.512994",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.28",
+        "text_widget_class": "CodeViewText",
+        "text": "s",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:37.543377",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.29",
+        "text_widget_class": "CodeViewText",
+        "text": "u",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:38.009290",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.30",
+        "text_widget_class": "CodeViewText",
+        "text": "r",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:38.040420",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.31",
+        "text_widget_class": "CodeViewText",
+        "text": "e",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:38.069877",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.32",
+        "text_widget_class": "CodeViewText",
+        "text": "r",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:38.099398",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "None",
+        "text_widget_class": "CodeViewText",
+        "index1": "38.32",
+        "time": "2018-03-17T19:16:39.258352"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.32",
+        "text_widget_class": "CodeViewText",
+        "text": "0",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:39.997504",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.33",
+        "text_widget_class": "CodeViewText",
+        "text": "x",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:40.431873",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.34",
+        "text_widget_class": "CodeViewText",
+        "text": "2",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:40.462209",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.35",
+        "text_widget_class": "CodeViewText",
+        "text": "8",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:40.917526",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.36",
+        "text_widget_class": "CodeViewText",
+        "text": ")",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:41.528189",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.37",
+        "text_widget_class": "CodeViewText",
+        "text": ")",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:43.688680",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.38",
+        "text_widget_class": "CodeViewText",
+        "text": "+",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:48.185024",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "None",
+        "text_widget_class": "CodeViewText",
+        "index1": "38.38",
+        "time": "2018-03-17T19:16:50.345248"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.14",
+        "text_widget_class": "CodeViewText",
+        "text": "+",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:16:56.409695",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "None",
+        "text_widget_class": "CodeViewText",
+        "index1": "38.14",
+        "time": "2018-03-17T19:17:04.681523"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.38",
+        "text_widget_class": "CodeViewText",
+        "text": "+",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:17:07.242218",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.39",
+        "text_widget_class": "CodeViewText",
+        "text": "m",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:17:07.815789",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.40",
+        "text_widget_class": "CodeViewText",
+        "text": "e",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:17:08.191312",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.41",
+        "text_widget_class": "CodeViewText",
+        "text": "s",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:17:08.221737",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.42",
+        "text_widget_class": "CodeViewText",
+        "text": "u",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:17:08.300470",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.43",
+        "text_widget_class": "CodeViewText",
+        "text": "r",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:17:08.702761",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.44",
+        "text_widget_class": "CodeViewText",
+        "text": "e",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:17:08.733160",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.45",
+        "text_widget_class": "CodeViewText",
+        "text": "0",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:17:09.945516",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.46",
+        "text_widget_class": "CodeViewText",
+        "text": "x",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:17:10.316623",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.47",
+        "text_widget_class": "CodeViewText",
+        "text": "2",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:17:10.348850",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "index": "38.48",
+        "text_widget_class": "CodeViewText",
+        "text": "8",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:17:10.428425",
+        "tags": "None"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "<Button-1>",
+        "widget_class": "CodeViewText",
+        "text_widget_class": "CodeViewText",
+        "time": "2018-03-17T19:17:25.694233",
+        "widget_id": 3017442992
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "42.20",
+        "text_widget_class": "CodeViewText",
+        "index1": "42.16",
+        "time": "2018-03-17T19:17:37.035075"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "<Button-1>",
+        "widget_class": "CodeViewText",
+        "text_widget_class": "CodeViewText",
+        "time": "2018-03-17T19:17:40.984715",
+        "widget_id": 3017442992
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "None",
+        "text_widget_class": "CodeViewText",
+        "index1": "42.26",
+        "time": "2018-03-17T19:17:42.569260"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "None",
+        "text_widget_class": "CodeViewText",
+        "index1": "42.31",
+        "time": "2018-03-17T19:17:45.641746"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "None",
+        "text_widget_class": "CodeViewText",
+        "index1": "42.30",
+        "time": "2018-03-17T19:17:45.997614"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "sequence": "TextDelete",
+        "index2": "None",
+        "text_widget_class": "CodeViewText",
+        "index1": "42.29",
+        "time": "2018-03-17T19:17:46.082210"
+    },
+    {
+        "text_widget_id": 3017442992,
+        "text_widget_class": "CodeViewText",
+        "filename": "/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/Watermark.py",
+        "editor_id": 3017445008,
+        "sequence": "Save",
+        "time": "2018-03-17T19:18:33.823260",
+        "editor_class": "Editor"
+    },
+    {
+        "sequence": "Command",
+        "time": "2018-03-17T19:18:33.853292",
+        "command_id": "save_file",
+        "denied": "False"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:18:49.997957",
+        "widget_id": 3037466352,
+        "widget_class": "EditorNotebook"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:18:51.624615",
+        "widget_id": 3037466352,
+        "widget_class": "EditorNotebook"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:19:13.256860",
+        "widget_id": 3037466352,
+        "widget_class": "EditorNotebook"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:19:14.414251",
+        "widget_id": 3037558832,
+        "widget_class": "Button"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "sequence": "TextDelete",
+        "index2": "82.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:19:14.534579",
+        "index1": "81.4",
+        "text_widget_context": "shell"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "81.4",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:19:14.541313",
+        "text": "%Run mainIHM_ebauche_finale.py\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('automagic', 'toplevel', 'command')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "sequence": "TextDelete",
+        "index2": "82.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:19:14.556744",
+        "index1": "82.0",
+        "text_widget_context": "shell"
+    },
+    {
+        "sequence": "MagicCommand",
+        "time": "2018-03-17T19:19:14.565147",
+        "cmd_line": "%Run mainIHM_ebauche_finale.py\n"
+    },
+    {
+        "sequence": "ShellCommand",
+        "time": "2018-03-17T19:19:16.151805",
+        "command_text": "%Run mainIHM_ebauche_finale.py\n"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "82.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:19:27.116206",
+        "text": "S",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout', 'vertically_spaced')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "82.1",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:19:27.129602",
+        "text": "oft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "83.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:19:27.700395",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "84.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:19:28.192507",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "85.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:19:28.733876",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "86.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:19:35.729229",
+        "text": "go reglages\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "time": "2018-03-17T19:19:36.038858",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "87.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:19:41.085625",
+        "text": "go valider\n0\n0\n00010100\n0x14\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "92.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:19:41.202123",
+        "text": "equal\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "index": "93.0",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-17T19:19:43.638297",
+        "text": "go nouveau\n",
+        "sequence": "TextInsert",
+        "text_widget_context": "shell",
+        "tags": "('io', 'stdout')"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:19:59.126630",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "time": "2018-03-17T19:20:06.891369",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:20:07.669232",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "time": "2018-03-17T19:20:07.765019",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:20:18.420308",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "time": "2018-03-17T19:20:41.248693",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:20:41.799135",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "time": "2018-03-17T19:20:41.864924",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:20:54.861235",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "sequence": "<Button-1>",
+        "widget_class": "ShellText",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "widget_id": 3037532048,
+        "time": "2018-03-17T19:20:57.439458"
+    },
+    {
+        "sequence": "Command",
+        "time": "2018-03-17T19:21:02.112943",
+        "command_id": "interrupt",
+        "denied": "False"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:21:45.242269",
+        "widget_id": 3037529424,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "time": "2018-03-17T19:21:46.048473",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:21:48.084706",
+        "widget": ".__tk_filedialog.contents.icons.cHull.canvas"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:21:48.221190",
+        "widget": ".__tk_filedialog.contents.icons.cHull.canvas"
+    },
+    {
+        "text_widget_id": 3017445168,
+        "text_widget_class": "CodeViewText",
+        "editor_id": 3019070448,
+        "sequence": "EditorTextCreated",
+        "time": "2018-03-17T19:21:48.637952",
+        "editor_class": "Editor"
+    },
+    {
+        "text_widget_id": 3017445168,
+        "text_widget_class": "CodeViewText",
+        "filename": "/media/pi/USB DISK/ENSAM/2A/Projet Raspberry/Programmation/IHM/FIFO.py",
+        "editor_id": 3019070448,
+        "sequence": "Open",
+        "time": "2018-03-17T19:21:48.643356",
+        "editor_class": "Editor"
+    },
+    {
+        "text_widget_id": 3017445168,
+        "sequence": "TextDelete",
+        "index2": "2.0",
+        "text_widget_class": "CodeViewText",
+        "index1": "1.0",
+        "time": "2018-03-17T19:21:48.657970"
+    },
+    {
+        "text_widget_id": 3017445168,
+        "index": "1.0",
+        "text_widget_class": "CodeViewText",
+        "text": "import ADXL362\n#import spidev\nimport time\nimport ConversionAccelsFIFO as conv\n#import FuncWriteReg as write\nimport Watermark\naccel=ADXL362.ADXL362()\n\n#Necessaire pour reinitialiser la carte, mais ne le sera plus a priori\n#write.Write(0x28,0x02)\n\n#Idem : ne sera plus utile ??\n#accel.begin_measure()\n\ndef FIFO(nbPointsNecessaires, normeAccStat):\n    listeAcc=[]\n    wmk=Watermark.watermarkRead()\n    while len(listeAcc)<nbPointsNecessaires:\n        accel.spi.cshigh=False          #Met la Chip en stand-by\n        status=accel.spi_read_reg(0x0B)    #Lecture du status\n        accel.spi.cshigh=True\n        #Watermark atteint ? (en booleen)\n        besoinLecture=Watermark.watermark(bin(status)[2:])\n        \n        #Si le watermark est atteint il faut vider le FIFO\n        if besoinLecture :\n            #Lecture ensemble donnees\n            accel.spi.cshigh=False\n            values=accel.spi.xfer2([0x0D]+[0x00]*(wmk//6)*6)[1:]\n            accel.spi.cshigh=True\n            \n            #Suppression des series de 0 de fin de lecture\n            while values[-2:]==[0]*2:\n                del(values[-6:])\n            \n            listeAcc+=conv.convert(values,normeAccStat)\n            \n#            #Enregistrement donnees dans un fichier\n#            f=open(\"ListAccel.txt\",\"w\")\n#            print(listeAcc)\n#            f.write(str(listaccel))\n#            f.close()\n            time.sleep(.05)\n    return(listeAcc)",
+        "sequence": "TextInsert",
+        "time": "2018-03-17T19:21:48.726034",
+        "tags": "()"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:21:48.859444",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:21.993929",
+        "widget_id": 3037558832,
+        "widget_class": "Button"
+    },
+    {
+        "text_widget_id": 3037532048,
+        "sequence": "<Button-1>",
+        "widget_class": "ShellText",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "widget_id": 3037532048,
+        "time": "2018-03-17T19:22:24.094754"
+    },
+    {
+        "sequence": "Command",
+        "time": "2018-03-17T19:22:25.517943",
+        "command_id": "interrupt",
+        "denied": "False"
+    },
+    {
+        "sequence": "Command",
+        "time": "2018-03-17T19:22:25.789953",
+        "command_id": "interrupt",
+        "denied": "False"
+    },
+    {
+        "sequence": "Command",
+        "time": "2018-03-17T19:22:26.000366",
+        "command_id": "interrupt",
+        "denied": "False"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:27.465147",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:31.255892",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:32.548075",
+        "widget_id": 3037466352,
+        "widget_class": "EditorNotebook"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:33.257685",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:34.041343",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:34.264423",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:34.470464",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:34.647358",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:34.814011",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:34.981327",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "time": "2018-03-17T19:22:39.221654",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<FocusIn>",
+        "time": "2018-03-17T19:22:41.346692",
+        "widget_id": 3059071280,
+        "widget_class": "Workbench"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:43.975221",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:44.167211",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:44.359184",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:44.567201",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:44.738016",
+        "widget_id": 3037559280,
+        "widget_class": "Button"
+    },
+    {
+        "sequence": "<Button-1>",
+        "time": "2018-03-17T19:22:45.682432",
+        "widget_id": 3037466352,
+        "widget_class": "EditorNotebook"
+    }
+]

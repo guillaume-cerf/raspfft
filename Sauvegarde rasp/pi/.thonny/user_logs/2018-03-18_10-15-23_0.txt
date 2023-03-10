@@ -1,0 +1,815 @@
+[
+    {
+        "view_class": "HelpView",
+        "view_id": 3037187216,
+        "time": "2018-03-18T10:15:23.803007",
+        "sequence": "ShowView"
+    },
+    {
+        "editor_id": 3037129392,
+        "text_widget_class": "CodeViewText",
+        "time": "2018-03-18T10:15:24.425087",
+        "text_widget_id": 3037128592,
+        "editor_class": "Editor",
+        "sequence": "EditorTextCreated"
+    },
+    {
+        "editor_id": 3037129392,
+        "text_widget_class": "CodeViewText",
+        "time": "2018-03-18T10:15:24.444521",
+        "text_widget_id": 3037128592,
+        "filename": "/home/pi/IHM/mainIHM_ebauche_finale.py",
+        "editor_class": "Editor",
+        "sequence": "Open"
+    },
+    {
+        "index2": "2.0",
+        "text_widget_class": "CodeViewText",
+        "time": "2018-03-18T10:15:25.438810",
+        "text_widget_id": 3037128592,
+        "index1": "1.0",
+        "sequence": "TextDelete"
+    },
+    {
+        "tags": "()",
+        "index": "1.0",
+        "time": "2018-03-18T10:15:25.641064",
+        "text_widget_id": 3037128592,
+        "text": "import sys #impose par QT\nimport os\nfrom PyQt4.QtCore import * #impose par QT\nfrom PyQt4.QtGui import * #impose par QT\nfrom PyQt4 import *\n\n\nfrom page_reglages import Ui_Reglages\nfrom page_acquisitionzaloeil import Ui_Acquisition\nfrom numpy import linspace,sin,zeros\nfrom numpy import fft  #OU from scipy.fftpack import fft #on fait enuite uniquement fft(blabla)\n\n#pour l'accelero :\nimport Reglages_accelero         #nom du fichier python dont la fonction maj_reglages permet d'ecrire dans le registre les nouveaux reglages\nimport ReadFIFO                 #ReadFIFO.go() permet d'enregistrer le fifo\n\n\n##------------ Fenetre ACQUISITION avec relations\n\nclass Interface_Acquisition(QWidget): #pour une autre fenetre, ca peut etre QDialog ou QMainWindow ou QWidget\n    def __init__(self):\n        QWidget.__init__(self) #Appel explicite du constructeur de la classe mere, impose par python\n\n        #Instanciation et initialisation de l'interface Qt\n        self.ui = Ui_Acquisition() #class creee par Qt METTRE UN VRAI NOM\n        self.ui.setupUi(self)       #on lance la fonction definie dans la class\n\n        #initialisation parametres\n        global etat_comboBox_freq, etat_comboBox_accel  #en global pour dialoguer entre acquisition et reglages\n\n        self.ui.checkBox_accelx.setChecked(True) #par defaut coche ---- setChecked ou setCheckState\n        self.ui.checkBox_accely.setChecked(True) #par defaut coche\n        self.ui.checkBox_accelz.setCheckState(False) #par defaut non coche\n        self.ui.comboBox_FourrierTempo.setCurrentIndex(0) #par defaut indice 0 donc temporel\n        self.ui.progressBar.setValue(0)  #pour dire quelle valeur mettre (de 0 a 100) ou .value() pour consulter\n        etat_comboBox_freq = 0 #par defaut 200Hz\n        etat_comboBox_accel = 0 #par defaut 2g\n        \n        \n        self.init_listes() #initialise une premiere fois les listes\n        self.afficher() #pour un premier affichage du matplotlib vide mais avec legende etc\n\n        \n        # definition relations\n        self.connect(self.ui.PushButton_Fermer, SIGNAL('clicked()'), self.action_Fermer)\n        self.connect(self.ui.PushButton_Nouveau, SIGNAL('clicked()'), self.action_Nouveau)\n        self.connect(self.ui.PushButton_Reglages, SIGNAL('clicked()'), self.action_Reglages)\n        self.connect(self.ui.PushButton_Exporter, SIGNAL('clicked()'), self.action_Exporter)\n        self.connect(self.ui.comboBox_FourrierTempo, SIGNAL('currentIndexChanged(int)'), self.action_modif_affichage)\n        self.connect(self.ui.checkBox_accelx, SIGNAL('clicked()'), self.action_modif_affichage) #ou stateChanged(int)\n        self.connect(self.ui.checkBox_accely, SIGNAL('clicked()'), self.action_modif_affichage)\n        self.connect(self.ui.checkBox_accelz, SIGNAL('clicked()'), self.action_modif_affichage)\n        \n    def action_Fermer(self):\n        global interface\n        print('go fermer')\n        interface=0 #sans espace\n        \n    def action_Nouveau(self):\n        print('go nouveau')\n        self.ui.progressBar.setValue(0) #mise a 0\n        self.acquerir()    \n        self.afficher()\n        self.ui.progressBar.setValue(100) #mise a 100 fictive\n        \n    def action_Reglages(self):\n        global interface2\n        print('go reglages')\n        interface2 = Interface_Reglages()\n        interface2.show()\n        \n    def action_Exporter(self):\n        print('go exporter')\n        self.memorise_txt()\n        os.popen(\"recuperation_donnees.txt\")\n        \n        \n    def action_modif_affichage(self):\n        print(self.ui.checkBox_accelx.checkState()) #renvoie 0 ou 2\n        print(self.ui.checkBox_accely.checkState())\n        print(self.ui.checkBox_accelz.checkState())\n        print(self.ui.comboBox_FourrierTempo.currentIndex())  # .currentText  ou .currentIndex(0 ou 1)\n        self.afficher()\n\n\n    def acquerir(self):\n        \"\"\"a pour but d'acquerir les donnees accelero et les rend fonctionnelles\"\"\"\n\n        #declenchement par amplitude avant\n        \n        Atot = ReadFIFO.go() #liste des triplets issus du fifo (512 pour l'instant)\n\n        N=len(Atot) #nb triplets mesures\n        fe = etat_comboBox_freq   #besoin de global en debut de fonction ?\n        tmax = (N-1)/fe\n        \n        self.T = linspace(0,tmax,N)\n        self.F = linspace(0,fe,N)\n        self.F=self.F[0:N//2] #on coupe a la moitie Shannon\n\n        for i in range(N):\n            self.A1.append(Atot[i][0])  #ecriture accel en x\n            self.A2.append(Atot[i][1])\n            self.A3.append(Atot[i][2])\n\n        self.TF1=2*abs(fft.fft(self.A1))/N  #TF de l'acceleration en x\n        self.TF1=self.TF1[0:N//2]\n        self.TF2=2*abs(fft.fft(self.A2))/N  #TF de l'acceleration en y\n        self.TF2=self.TF2[0:N//2]\n        self.TF3=2*abs(fft.fft(self.A3))/N  #TF de l'acceleration en z\n        self.TF3=self.TF3[0:N//2]\n\n##        for i in range(N):   ##on raccourci les nombres en CS --- INUTILE SI ENTIERS\n##            self.T[i]=self.nCS(self.T[i])\n##            if i<N//2:\n##                self.F[i]=self.nCS(self.F[i])\n##                self.TF1[i]=self.nCS(self.TF1[i])\n##                self.TF2[i]=self.nCS(self.TF2[i])\n##                self.TF3[i]=self.nCS(self.TF3[i])\n        \n    def afficher(self):\n        \"\"\"affiche le graphe avec les courbes choisies\"\"\"\n        self.X1=[]\n        self.X2=[]\n        self.X3=[]\n        self.Y1=[] #on affichera tout le temps X1,X2,X3,Y1,Y2,Y3 quitte a etre vide, sont nos variables d'affiachage\n        self.Y2=[]\n        self.Y3=[]\n        self.c1=self.ui.checkBox_accelx.checkState() #lecture etat checkbox 0 ou 2\n        self.c2=self.ui.checkBox_accely.checkState()\n        self.c3=self.ui.checkBox_accelz.checkState()\n        self.c4=self.ui.comboBox_FourrierTempo.currentIndex() #1 pour Fourrier et 0 pour temporel\n        \n        if self.c1==2 and self.c4==0:  #si accelx coche et temporel\n            self.Y1=self.A1\n            self.X1=self.T\n        if self.c2==2 and self.c4==0:\n            self.Y2=self.A2\n            self.X2=self.T\n        if self.c3==2 and self.c4==0:\n            self.Y3=self.A3\n            self.X3=self.T\n\n        if self.c1==2 and self.c4==1:  #si accelx coche et Fourrier\n            self.Y1=self.TF1\n            self.X1=self.F\n        if self.c2==2 and self.c4==1:\n            self.Y2=self.TF2\n            self.X2=self.F\n        if self.c3==2 and self.c4==1:\n            self.Y3=self.TF3\n            self.X3=self.F\n\n            \n        self.ui.matplotlibwidget.axes.hold(False) #on tej le plot precedent et n'est pas ce qui supprime les titres  \n        self.ui.matplotlibwidget.axes.plot(self.X1,self.Y1,'r-')   # . pour avoir les points et - pour les relier --> par exemple'r.-'  \n        self.ui.matplotlibwidget.axes.hold(True) #on maintient\n        self.ui.matplotlibwidget.axes.plot(self.X2,self.Y2,'b-')\n        self.ui.matplotlibwidget.axes.hold(True)\n        self.ui.matplotlibwidget.axes.plot(self.X3,self.Y3,'g-')\n        \n        self.ui.matplotlibwidget.axes.set_title('Accelerations') #a repeter car supprimer par le replot\n        self.ui.matplotlibwidget.axes.set_ylabel('Amplitude') #ou xscale\n        self.ui.matplotlibwidget.axes.set_xlabel('t(s) ou f(Hz)')\n        \n        self.ui.matplotlibwidget.draw() ##important\n        \n    \n    \n    \n    def memorise_txt(self): #il faut avoir fait nouveau pour tester\n        \"\"\"passe les donnees dans un fichier txt\"\"\"\n        fich=open('recuperation_donnees.txt','w')\n        fich.write('t(s);Ax(m/s2);Ay(m/s2);Az(m/s2);F(Hz);TF(Ax);TF(Ay);TF(Az)\\n')\n        for i in range(len(self.T)):\n            a,b,c,d=str(self.T[i]),str(self.A1[i]),str(self.A2[i]),str(self.A3[i])\n            if i<len(self.F):\n                e,f,g,h=str(self.F[i]),str(self.TF1[i]),str(self.TF2[i]),str(self.TF3[i])\n            else:\n                e,f,g,h='','','',''\n            a,b,c,d,e,f,g,h=a.replace('.',','),b.replace('.',','),c.replace('.',','),d.replace('.',','),e.replace('.',','),f.replace('.',','),g.replace('.',','),h.replace('.',',') #on remplace . en , pour traitement excel\n            fich.write(a)\n            fich.write(';') ##avec ; tout le temps pour bien separer et avoir un passage propre sur excel\n            fich.write(b)\n            fich.write(';')\n            fich.write(c)\n            fich.write(';')\n            fich.write(d)\n            fich.write(';')\n            fich.write(e)\n            fich.write(';')\n            fich.write(f)\n            fich.write(';')\n            fich.write(g)\n            fich.write(';')\n            fich.write(h)\n            fich.write('\\n')\n        fich.close()\n\n\n    def init_listes(self):\n        '''initialise toutes les listes pour pouvoir les reecrire pour chaque nouveau'''\n        self.T =[]  #ensemble des temps\n        self.F=[]   #futur ensemble des frequences pour fft\n        self.A1=[]  #ensemble des accel en x\n        self.A2=[]  #ensemble des accel en y\n        self.A3=[]  #ensemble des accel en z\n        self.TF1 =[] #futur ensemble des TF pour A1\n        self.TF2 =[] #futur ensemble des TF pour A2\n        self.TF3 =[] #futur ensemble des TF pour A3\n \n    def nCS(self,nombre):     ##### INUTILE SI ON TRAITE DES NOMBRES ENTIERS OU AVEC PEU DE DECIMALES\n        \"\"\"reduit les chiffres signicatifs a n\"\"\"\n        n=3\n        facteur=10**n\n        return int(facteur*nombre)/facteur\n\n\n\n###----------------Fenetre REGLAGES avec relations\n        \nclass Interface_Reglages(QWidget): #pour une autre fenetre, ca peut etre QDialog ou QMainWindow ou QWidget\n    def __init__(self):\n        QWidget.__init__(self) #Appel explicite du constructeur de la classe mere, impose par python\n\n        #Instanciation et initialisation de l'interface Qt\n        self.ui2 = Ui_Reglages()\n        self.ui2.setupUi(self)\n        #initialisation combobox\n        self.ui2.comboBox_freq.setCurrentIndex(etat_comboBox_freq) #pour memoriser ce qui a ete fait avant\n        self.ui2.comboBox_accel.setCurrentIndex(etat_comboBox_accel)\n\n        self.connect(self.ui2.PushButton_retour, SIGNAL('clicked()'), self.action_retour)\n        self.connect(self.ui2.PushButton_valider, SIGNAL('clicked()'), self.action_valider)\n\n    def action_retour(self):\n        global interface2\n        print('go retour')\n        interface2=0 #sans enregistrer les modif\n\n    def action_valider(self):\n        global etat_comboBox_freq, etat_comboBox_accel, interface2,param\n        print('go valider')\n        etat_comboBox_freq = self.ui2.comboBox_freq.currentIndex()\n        etat_comboBox_accel = self.ui2.comboBox_accel.currentIndex()\n        print(etat_comboBox_accel)\n        print(etat_comboBox_freq)\n        \n        Reglages_accelero.maj_reglages(etat_comboBox_accel,etat_comboBox_freq)  #on met a jour les reglages de l'accelero\n\n        interface2=0\n\n    \n###Reglages.showFullScreen()\n###Reglages.showMaximized()\n\n#C:\\Users\\cyril\\Downloads\\WinPython-32bit-3.3.5.9\\python-3.3.5\\Lib\\site-packages\\PyQt4\\doc\\html   qcheckbox etc    \n\n\n\n###------------- Lesture du MAIN pour lancer l'algo\n\n#Test de l'application\nif __name__==\"__main__\":\n    appUI = QApplication(sys.argv) #Instanciation de l'application (pour intercepter les mouvements de souris etc...)\n    interface = Interface_Acquisition() #Instanciation de l'interface\n    #interface = Interface_Reglages()  #l'un ou l'autre pour les tests\n    ##interface.resize(680,320)\n    ##interface.showMaximized()  ##pas utile car n'est lu qu'une fois\n    interface.show() #Affichage de l'interface\n    sys.exit(appUI.exec_()) #Execution de l'application\n    \n \n",
+        "sequence": "TextInsert",
+        "text_widget_class": "CodeViewText"
+    },
+    {
+        "view_class": "HelpView",
+        "view_id": 3037187216,
+        "time": "2018-03-18T10:15:25.782940",
+        "sequence": "ShowView"
+    },
+    {
+        "view_class": "ShellView",
+        "view_id": 3037052656,
+        "time": "2018-03-18T10:15:25.786719",
+        "sequence": "ShowView"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('welcome',)",
+        "index": "1.0",
+        "time": "2018-03-18T10:15:34.456967",
+        "text_widget_context": "shell",
+        "text": "Python 3.4.2 (/usr/bin/python3)",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io',)",
+        "index": "1.31",
+        "time": "2018-03-18T10:15:34.466722",
+        "text_widget_context": "shell",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('toplevel', 'prompt')",
+        "index": "2.0",
+        "time": "2018-03-18T10:15:34.474749",
+        "text_widget_context": "shell",
+        "text": ">>> ",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "widget_id": 3058596144,
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "time": "2018-03-18T10:15:34.535594"
+    },
+    {
+        "widget_id": 3018596400,
+        "widget_class": "Scrollbar",
+        "sequence": "<Button-1>",
+        "time": "2018-03-18T10:17:48.186365"
+    },
+    {
+        "widget": ".#3037935280",
+        "sequence": "<Button-1>",
+        "time": "2018-03-18T10:18:41.796071"
+    },
+    {
+        "widget_id": 3058596144,
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "time": "2018-03-18T10:18:41.843267"
+    },
+    {
+        "widget": ".#3037935280.#3037935280#3036989712",
+        "sequence": "<Button-1>",
+        "time": "2018-03-18T10:18:45.706319"
+    },
+    {
+        "index2": "3.0",
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-18T10:18:45.800856",
+        "text_widget_id": 3037051440,
+        "index1": "2.4",
+        "sequence": "TextDelete"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('automagic', 'toplevel', 'command')",
+        "index": "2.4",
+        "time": "2018-03-18T10:18:45.808596",
+        "text_widget_context": "shell",
+        "text": "%cd /home/pi/IHM\n%Run mainIHM_ebauche_finale.py\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "index2": "4.0",
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-18T10:18:45.822728",
+        "text_widget_id": 3037051440,
+        "index1": "4.0",
+        "sequence": "TextDelete"
+    },
+    {
+        "cmd_line": "%cd /home/pi/IHM\n",
+        "sequence": "MagicCommand",
+        "time": "2018-03-18T10:18:45.830134"
+    },
+    {
+        "sequence": "ShellCommand",
+        "time": "2018-03-18T10:18:45.840171",
+        "command_text": "%cd /home/pi/IHM\n"
+    },
+    {
+        "denied": "False",
+        "command_id": "run_current_script",
+        "sequence": "Command",
+        "time": "2018-03-18T10:18:45.841066"
+    },
+    {
+        "widget_id": 3058596144,
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "time": "2018-03-18T10:18:45.844767"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('toplevel', 'prompt')",
+        "index": "3.0",
+        "time": "2018-03-18T10:18:45.872496",
+        "text_widget_context": "shell",
+        "text": ">>> ",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "index2": "4.0",
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "time": "2018-03-18T10:18:45.880815",
+        "text_widget_id": 3037051440,
+        "index1": "4.0",
+        "sequence": "TextDelete"
+    },
+    {
+        "cmd_line": "%Run mainIHM_ebauche_finale.py\n",
+        "sequence": "MagicCommand",
+        "time": "2018-03-18T10:18:45.888999"
+    },
+    {
+        "sequence": "ShellCommand",
+        "time": "2018-03-18T10:18:47.465107",
+        "command_text": "%Run mainIHM_ebauche_finale.py\n"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout', 'vertically_spaced')",
+        "index": "4.0",
+        "time": "2018-03-18T10:19:00.555877",
+        "text_widget_context": "shell",
+        "text": "S",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "4.1",
+        "time": "2018-03-18T10:19:00.562954",
+        "text_widget_context": "shell",
+        "text": "oft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "5.0",
+        "time": "2018-03-18T10:19:01.109796",
+        "text_widget_context": "shell",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "widget_id": 3058596144,
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "time": "2018-03-18T10:19:10.397246"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "6.0",
+        "time": "2018-03-18T10:19:30.960878",
+        "text_widget_context": "shell",
+        "text": "go nouveau\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "7.0",
+        "time": "2018-03-18T10:19:31.459584",
+        "text_widget_context": "shell",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "8.0",
+        "time": "2018-03-18T10:19:31.472744",
+        "text_widget_context": "shell",
+        "text": "OK\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "9.0",
+        "time": "2018-03-18T10:19:31.612190",
+        "text_widget_context": "shell",
+        "text": "[15, 1, 71, 64, 127, 132, 15, 1, 72, 64, 131, 132, 17, 1, 73, 64, 127, 132, 14, 1, 76, 64, 120, 132, 12, 1, 76, 64, 127, 132, 15, 1, 72, 64, 120, 132, 17, 1, 71, 64, 124, 132, 15, 1, 76, 64, 131, 132, 15, 1, 71, 64, 127, 132, 20, 1, 71, 64, 127, 132, 19, 1, 71, 64, 136, 132, 15, 1, 72, 64, 124, 132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 1, 71, 64, 124, 132, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 600",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "9.1895",
+        "time": "2018-03-18T10:19:31.716277",
+        "text_widget_context": "shell",
+        "text": "\n1\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "11.0",
+        "time": "2018-03-18T10:19:31.754468",
+        "text_widget_context": "shell",
+        "text": "Traceback (most recent call last):\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "12.0",
+        "time": "2018-03-18T10:19:31.760402",
+        "text_widget_context": "shell",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr', 'hyperlink')",
+        "index": "12.2",
+        "time": "2018-03-18T10:19:31.766333",
+        "text_widget_context": "shell",
+        "text": "File \"/home/pi/IHM/mainIHM_ebauche_finale.py\", line 62, in action_Nouveau",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "12.75",
+        "time": "2018-03-18T10:19:31.772514",
+        "text_widget_context": "shell",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "13.0",
+        "time": "2018-03-18T10:19:31.778292",
+        "text_widget_context": "shell",
+        "text": "    self.acquerir()    \n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "14.0",
+        "time": "2018-03-18T10:19:31.784575",
+        "text_widget_context": "shell",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr', 'hyperlink')",
+        "index": "14.2",
+        "time": "2018-03-18T10:19:31.790578",
+        "text_widget_context": "shell",
+        "text": "File \"/home/pi/IHM/mainIHM_ebauche_finale.py\", line 91, in acquerir",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "14.69",
+        "time": "2018-03-18T10:19:31.796562",
+        "text_widget_context": "shell",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "15.0",
+        "time": "2018-03-18T10:19:31.802769",
+        "text_widget_context": "shell",
+        "text": "    Atot = ReadFIFO.go() #liste des triplets issus du fifo (512 pour l'instant)\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "16.0",
+        "time": "2018-03-18T10:19:31.808652",
+        "text_widget_context": "shell",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr', 'hyperlink')",
+        "index": "16.2",
+        "time": "2018-03-18T10:19:31.814735",
+        "text_widget_context": "shell",
+        "text": "File \"/home/pi/IHM/ReadFIFO.py\", line 21, in go",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "16.49",
+        "time": "2018-03-18T10:19:31.820644",
+        "text_widget_context": "shell",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "17.0",
+        "time": "2018-03-18T10:19:31.826521",
+        "text_widget_context": "shell",
+        "text": "    print(conv.convert(value))\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "18.0",
+        "time": "2018-03-18T10:19:31.832806",
+        "text_widget_context": "shell",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr', 'hyperlink')",
+        "index": "18.2",
+        "time": "2018-03-18T10:19:31.838797",
+        "text_widget_context": "shell",
+        "text": "File \"/home/pi/IHM/ConversionAccelsFIFO.py\", line 22, in convert",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "18.66",
+        "time": "2018-03-18T10:19:31.844670",
+        "text_widget_context": "shell",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "19.0",
+        "time": "2018-03-18T10:19:31.850705",
+        "text_widget_context": "shell",
+        "text": "    x=liste.pop(0)+liste.pop(0)*2**8    #somme des deux octets pour traitement\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "20.0",
+        "time": "2018-03-18T10:19:31.856822",
+        "text_widget_context": "shell",
+        "text": "IndexError: pop from empty list\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "21.0",
+        "time": "2018-03-18T10:19:36.086181",
+        "text_widget_context": "shell",
+        "text": "go reglages\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "22.0",
+        "time": "2018-03-18T10:19:44.256707",
+        "text_widget_context": "shell",
+        "text": "go valider\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "23.0",
+        "time": "2018-03-18T10:19:44.330219",
+        "text_widget_context": "shell",
+        "text": "0\n0\n00010100\n0x14\nOK\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "widget_id": 3058596144,
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "time": "2018-03-18T10:19:44.370441"
+    },
+    {
+        "widget_id": 3058596144,
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "time": "2018-03-18T10:19:45.215246"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "28.0",
+        "time": "2018-03-18T10:19:55.202891",
+        "text_widget_context": "shell",
+        "text": "go nouveau\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "29.0",
+        "time": "2018-03-18T10:19:55.707927",
+        "text_widget_context": "shell",
+        "text": "Soft reset\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "30.0",
+        "time": "2018-03-18T10:19:55.720314",
+        "text_widget_context": "shell",
+        "text": "equal\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "31.0",
+        "time": "2018-03-18T10:19:55.839732",
+        "text_widget_context": "shell",
+        "text": "[79, 64, 131, 132, 19, 1, 78, 64, 120, 132, 32, 1, 79, 64, 120, 132, 28, 1, 78, 64, 120, 132, 24, 1, 83, 64, 126, 132, 23, 1, 76, 64, 124, 132, 16, 1, 79, 64, 124, 132, 24, 1, 81, 64, 120, 132, 22, 1, 78, 64, 121, 132, 23, 1, 76, 64, 124, 132, 25, 1, 76, 64, 135, 132, 28, 1, 79, 64, 120, 132, 24, 1, 79, 64, 115, 132, 23, 1, 79, 64, 127, 132, 24, 1, 79, 64, 120, 132, 23, 1, 78, 64, 119, 132, 24, 1, 80, 64, 121, 132, 19, 1, 79, 64, 127, 132, 19, 1, 83, 64, 126, 132, 24, 1, 83, 64, 120, 132, 23, 1, 78, 64, 120, 132, 30, 1, 89, 64, 126, 132, 25, 1, 72, 64, 127, 132, 24, 1, 73, 64, 120, 132, 24, 1, 79, 64, 115, 132, 15, 1, 79, 64, 120, 132, 24, 1, 71, 64, 127, 132, 25, 1, 75, 64, 120, 132, 24, 1, 78, 64, 115, 132, 28, 1, 73, 64, 123, 132, 28, 1, 76, 64, 120, 132, 22, 1, 79, 64, 121, 132, 20, 1, 79, 64, 125, 132, 25, 1, 76, 64, 124, 132, 23, 1, 75, 64, 124, 132, 23, 1, 79, 64, 116, 132, 15, 1, 75, 64, 114, 132, 24, 1, 76, 64, 124, 132, 24, 1, 78, 64, 124, 132, 23, 1, 78, 64, 116, 132, 28, 1, 85, 64, 112, 132, 24, 1, 78, 64, 124, 132, 24, 1, 79, 64, 126, 132, 19, 1, 76, 64, 126, 132, 20, 1, 79, 64, 112, 132, 25, 1, 79, 64, 112, 132, 24, 1, 79, 64, 120, 132, 24, 1, 79, 64, 121, 132, 30, 1, 71, 64, 121, 132, 22, 1, 76, 64, 124, 132, 24, 1, 78, 64, 116, 132, 24, 1, 77, 64, 115, 132, 19, 1, 76, 64, 127, 132, 24, 1, 79, 64, 119, 132, 24, 1, 78, 64, 123, 132, 25, 1, 83, 64, 120, 132, 19, 1, 81, 64, 119, 132, 23, 1, 79, 64, 120, 132, 24, 1, 79, 64, 131, 132, 31, 1, 78, 64, 119, 132, 20, 1, 83, 64, 115, 132, 23, 1, 78, 64, 115, 132, 24, 1, 73, 64, 112, 132, 28, 1, 73, 64, 126, 132, 24, 1, 78, 64, 124, 132, 28, 1, 79, 64, 118, 132, 24, 1, 76, 64, 120, 132, 20, 1, 76, 64, 119, 132, 24, 1, 79, 64, 121, 132, 24, 1, 76, 64, 124, 132, 24, 1, 89, 64, 131, 132, 24, 1, 78, 64, 120, 132, 22, 1, 83, 64, 120, 132, 25, 1, 79, 64, 124, 132, 25, 1, 79, 64, 127, 132, 30, 1, 78, 64, 135, 132, 24, 1, 79, 64, 127, 132, 24, 1, 76, 64, 120, 132, 25, 1, 76, 64, 115, 132, 20, 1, 79, 64, 116, 132, 19, 1, 76, 64, 123, 132, 24, 1, 76, 64, 118, 132, 24, 1, 71, 64, 115, 132, 24, 1, 71, 64, 120, 132, 28, 1, 73, 64, 124, 132, 23, 1, 78, 64, 127, 132, 19, 1, 79, 64, 120, 132, 19, 1, 79, 64, 124, 132, 24, 1, 79, 64, 120, 132, 28, 1, 67, 64, 124, 132, 24, 1, 76, 64, 127, 132, 24, 1, 79, 64, 121, 132, 17, 1, 76, 64, 113, 132, 29, 1, 78, 64, 120, 132, 19, 1, 78, 64, 135, 132, 22, 1, 81, 64, 127, 132, 22, 1, 78, 64, 113, 132, 19, 1, 76, 64, 112, 132, 22, 1, 73, 64, 124, 132, 25, 1, 76, 64, 124, 132, 25, 1]",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "31.2500",
+        "time": "2018-03-18T10:19:55.964448",
+        "text_widget_context": "shell",
+        "text": " 600\n1\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "33.0",
+        "time": "2018-03-18T10:19:55.999462",
+        "text_widget_context": "shell",
+        "text": "Traceback (most recent call last):\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "34.0",
+        "time": "2018-03-18T10:19:56.005675",
+        "text_widget_context": "shell",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr', 'hyperlink')",
+        "index": "34.2",
+        "time": "2018-03-18T10:19:56.011677",
+        "text_widget_context": "shell",
+        "text": "File \"/home/pi/IHM/mainIHM_ebauche_finale.py\", line 62, in action_Nouveau",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "34.75",
+        "time": "2018-03-18T10:19:56.017518",
+        "text_widget_context": "shell",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "35.0",
+        "time": "2018-03-18T10:19:56.023714",
+        "text_widget_context": "shell",
+        "text": "    self.acquerir()    \n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "36.0",
+        "time": "2018-03-18T10:19:56.029782",
+        "text_widget_context": "shell",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr', 'hyperlink')",
+        "index": "36.2",
+        "time": "2018-03-18T10:19:56.035687",
+        "text_widget_context": "shell",
+        "text": "File \"/home/pi/IHM/mainIHM_ebauche_finale.py\", line 91, in acquerir",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "36.69",
+        "time": "2018-03-18T10:19:56.041811",
+        "text_widget_context": "shell",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "37.0",
+        "time": "2018-03-18T10:19:56.047723",
+        "text_widget_context": "shell",
+        "text": "    Atot = ReadFIFO.go() #liste des triplets issus du fifo (512 pour l'instant)\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "38.0",
+        "time": "2018-03-18T10:19:56.053738",
+        "text_widget_context": "shell",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr', 'hyperlink')",
+        "index": "38.2",
+        "time": "2018-03-18T10:19:56.059722",
+        "text_widget_context": "shell",
+        "text": "File \"/home/pi/IHM/ReadFIFO.py\", line 21, in go",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "38.49",
+        "time": "2018-03-18T10:19:56.065598",
+        "text_widget_context": "shell",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "39.0",
+        "time": "2018-03-18T10:19:56.071604",
+        "text_widget_context": "shell",
+        "text": "    print(conv.convert(value))\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "40.0",
+        "time": "2018-03-18T10:19:56.077931",
+        "text_widget_context": "shell",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr', 'hyperlink')",
+        "index": "40.2",
+        "time": "2018-03-18T10:19:56.083748",
+        "text_widget_context": "shell",
+        "text": "File \"/home/pi/IHM/ConversionAccelsFIFO.py\", line 22, in convert",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "40.66",
+        "time": "2018-03-18T10:19:56.089777",
+        "text_widget_context": "shell",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "41.0",
+        "time": "2018-03-18T10:19:56.095796",
+        "text_widget_context": "shell",
+        "text": "    x=liste.pop(0)+liste.pop(0)*2**8    #somme des deux octets pour traitement\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "42.0",
+        "time": "2018-03-18T10:19:56.101658",
+        "text_widget_context": "shell",
+        "text": "IndexError: pop from empty list\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "43.0",
+        "time": "2018-03-18T10:20:26.887294",
+        "text_widget_context": "shell",
+        "text": "go exporter\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stdout')",
+        "index": "44.0",
+        "time": "2018-03-18T10:20:40.904495",
+        "text_widget_context": "shell",
+        "text": "go fermer\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "widget_id": 3058596144,
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "time": "2018-03-18T10:20:52.120689"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "45.0",
+        "time": "2018-03-18T10:20:52.174102",
+        "text_widget_context": "shell",
+        "text": "Traceback (most recent call last):\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "46.0",
+        "time": "2018-03-18T10:20:52.180051",
+        "text_widget_context": "shell",
+        "text": "  ",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr', 'hyperlink')",
+        "index": "46.2",
+        "time": "2018-03-18T10:20:52.186318",
+        "text_widget_context": "shell",
+        "text": "File \"/home/pi/IHM/mainIHM_ebauche_finale.py\", line 271, in <module>",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "46.70",
+        "time": "2018-03-18T10:20:52.192213",
+        "text_widget_context": "shell",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "47.0",
+        "time": "2018-03-18T10:20:52.198313",
+        "text_widget_context": "shell",
+        "text": "    sys.exit(appUI.exec_()) #Execution de l'application\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    },
+    {
+        "text_widget_id": 3037051440,
+        "tags": "('io', 'stderr')",
+        "index": "48.0",
+        "time": "2018-03-18T10:20:52.204640",
+        "text_widget_context": "shell",
+        "text": "SystemExit: 0\n",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText"
+    }
+]

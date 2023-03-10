@@ -1,0 +1,237 @@
+[
+    {
+        "editor_id": 3037627376,
+        "text_widget_class": "CodeViewText",
+        "time": "2017-11-10T11:43:20.989980",
+        "editor_class": "Editor",
+        "sequence": "EditorTextCreated",
+        "text_widget_id": 3037714928
+    },
+    {
+        "editor_id": 3037627376,
+        "text_widget_class": "CodeViewText",
+        "time": "2017-11-10T11:43:20.995677",
+        "editor_class": "Editor",
+        "sequence": "Open",
+        "filename": "/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/main.py",
+        "text_widget_id": 3037714928
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "index2": "2.0",
+        "sequence": "TextDelete",
+        "index1": "1.0",
+        "time": "2017-11-10T11:43:22.061904",
+        "text_widget_id": 3037714928
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "text": "import sys #impose par QT\nfrom PyQt4.QtCore import * #impose par QT\nfrom PyQt4.QtGui import * #impose par QT\nfrom PyQt4 import *\n#import tkinter\nfrom interface_accueil import Ui_MainWindow\n\n\n\nclass Interface(QMainWindow): #pour une autre fenetre, ca peut etre QDialog\n    def __init__(self):\n        QMainWindow.__init__(self) #Appel explicite du constructeur de la classe mere, impose par python\n\n        #Instanciation et initialisation de l'interface Qt\n        self.ui = Ui_MainWindow() #class creee par Qt METTRE UN VRAI NOM\n        self.ui.setupUi(self)\n\n        self.connect(self.ui.acquisition, SIGNAL('clicked()'), self.action_acquisition)\n        self.connect(self.ui.options, SIGNAL('clicked()'), self.action_options)\n\n\n    def action_acquisition(self):\n        global interface, interface2\n        print('lancement acquisition')\n        interface2 = Interface()\n        interface2.showFullScreen() #cree une 2e\n        interface=0\n        ###interface.quit()\n\n    def action_options(self):\n        global interface\n        interface = Interface()  ##ecrase la 1ere donc repart sur init\n        interface.showFullScreen()\n        \n        print(\"lancement options\")\n        \n        \n\n        \n\n\n\n#Test de l'application\nif __name__==\"__main__\":\n    appUI = QApplication(sys.argv) #Instanciation de l'application (pour intercepter les mouvements de souris etc...)\n    interface = Interface() #Instanciation de l'interface\n#    interface.resize(480,320)\n    interface.showFullScreen() #Affichage de l'interface\n    sys.exit(appUI.exec_()) #Execution de l'application\n    \n",
+        "tags": "()",
+        "index": "1.0",
+        "time": "2017-11-10T11:43:22.245794",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037714928
+    },
+    {
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3058973200,
+        "time": "2017-11-10T11:43:25.674826"
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": "Python 3.4.2 (/usr/bin/python3)",
+        "tags": "('welcome',)",
+        "index": "1.0",
+        "time": "2017-11-10T11:43:25.902327",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": "\n",
+        "tags": "('io',)",
+        "index": "1.31",
+        "time": "2017-11-10T11:43:25.936638",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": ">>> ",
+        "tags": "('toplevel', 'prompt')",
+        "index": "2.0",
+        "time": "2017-11-10T11:43:25.956719",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    },
+    {
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "widget_id": 3058973200,
+        "time": "2017-11-10T11:43:38.035369"
+    },
+    {
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3058973200,
+        "time": "2017-11-10T11:43:38.533422"
+    },
+    {
+        "widget_class": "Button",
+        "sequence": "<Button-1>",
+        "widget_id": 3037576880,
+        "time": "2017-11-10T11:43:52.265592"
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "index1": "2.4",
+        "sequence": "TextDelete",
+        "index2": "3.0",
+        "time": "2017-11-10T11:43:52.379749",
+        "text_widget_id": 3037574704
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": "%cd '/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation'\n%Run main.py\n",
+        "tags": "('automagic', 'toplevel', 'command')",
+        "index": "2.4",
+        "time": "2017-11-10T11:43:52.388286",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "index1": "4.0",
+        "sequence": "TextDelete",
+        "index2": "4.0",
+        "time": "2017-11-10T11:43:52.404105",
+        "text_widget_id": 3037574704
+    },
+    {
+        "sequence": "MagicCommand",
+        "time": "2017-11-10T11:43:52.413760",
+        "cmd_line": "%cd '/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation'\n"
+    },
+    {
+        "sequence": "ShellCommand",
+        "time": "2017-11-10T11:43:52.428065",
+        "command_text": "%cd '/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation'\n"
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": ">>> ",
+        "tags": "('toplevel', 'prompt')",
+        "index": "3.0",
+        "time": "2017-11-10T11:43:52.444497",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "index1": "4.0",
+        "sequence": "TextDelete",
+        "index2": "4.0",
+        "time": "2017-11-10T11:43:52.453410",
+        "text_widget_id": 3037574704
+    },
+    {
+        "sequence": "MagicCommand",
+        "time": "2017-11-10T11:43:52.460658",
+        "cmd_line": "%Run main.py\n"
+    },
+    {
+        "sequence": "ShellCommand",
+        "time": "2017-11-10T11:43:54.252678",
+        "command_text": "%Run main.py\n"
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": "T",
+        "tags": "('io', 'stderr', 'vertically_spaced')",
+        "index": "4.0",
+        "time": "2017-11-10T11:43:54.371870",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": "raceback (most recent call last):\n",
+        "tags": "('io', 'stderr')",
+        "index": "4.1",
+        "time": "2017-11-10T11:43:54.379925",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": "  ",
+        "tags": "('io', 'stderr')",
+        "index": "5.0",
+        "time": "2017-11-10T11:43:54.399705",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": "File \"/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/main.py\", line 2, in <module>",
+        "tags": "('io', 'stderr', 'hyperlink')",
+        "index": "5.2",
+        "time": "2017-11-10T11:43:54.407603",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": "\n",
+        "tags": "('io', 'stderr')",
+        "index": "5.98",
+        "time": "2017-11-10T11:43:54.413341",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": "    from PyQt4.QtCore import * #impose par QT\n",
+        "tags": "('io', 'stderr')",
+        "index": "6.0",
+        "time": "2017-11-10T11:43:54.421221",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": "ImportError: No module named 'PyQt4'\n",
+        "tags": "('io', 'stderr')",
+        "index": "7.0",
+        "time": "2017-11-10T11:43:54.427532",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    },
+    {
+        "text_widget_context": "shell",
+        "text_widget_class": "ShellText",
+        "text": ">>> ",
+        "tags": "('toplevel', 'prompt', 'vertically_spaced')",
+        "index": "8.0",
+        "time": "2017-11-10T11:43:54.457451",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037574704
+    }
+]

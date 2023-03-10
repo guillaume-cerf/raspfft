@@ -1,0 +1,409 @@
+[
+    {
+        "time": "2018-03-16T15:43:26.110269",
+        "view_class": "HelpView",
+        "sequence": "ShowView",
+        "view_id": "HelpView"
+    },
+    {
+        "editor_class": "Editor",
+        "editor_id": 3037612560,
+        "sequence": "EditorTextCreated",
+        "text_widget_class": "CodeViewText",
+        "time": "2018-03-16T15:43:26.723675",
+        "text_widget_id": 3019034896
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "editor_id": 3037612560,
+        "sequence": "Open",
+        "filename": "/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/Tests/test_fft.py",
+        "time": "2018-03-16T15:43:26.728960",
+        "editor_class": "Editor",
+        "text_widget_id": 3019034896
+    },
+    {
+        "time": "2018-03-16T15:43:27.753100",
+        "sequence": "TextDelete",
+        "index2": "2.0",
+        "index1": "1.0",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3019034896
+    },
+    {
+        "time": "2018-03-16T15:43:27.857978",
+        "index": "1.0",
+        "sequence": "TextInsert",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3019034896,
+        "tags": "()",
+        "text": "from numpy import linspace,sin\nfrom numpy import fft  #from scipy.fftpack import fft\nfrom matplotlib.pyplot import *\n\n\nN=30\nxmax=2\nX=linspace(0,xmax,N)\nte=xmax/(N-1)\nfe=1/te\nY=[]\nfor i in range(N):\n    Y.append(sin(12*X[i])+2*sin(24*X[i])) #periode T=2TT/6 donc 1 et f=6/2TT = 1\n\nF=linspace(0,fe,N) #ie un pas de fe/(N-1)\n\nTF=2*abs(fft.fft(Y))/N  #toujours 2/N pour avoir la bonne amplitude\nprint(TF)\nprint(fe)\nprint(te)\n\nsubplot(121)    \nplot(X,Y)\nhold()\nsubplot(122)    \nplot(F[0:N//2],TF[0:N//2])\nshow()\n"
+    },
+    {
+        "time": "2018-03-16T15:43:27.934380",
+        "view_class": "HelpView",
+        "sequence": "ShowView",
+        "view_id": "HelpView"
+    },
+    {
+        "time": "2018-03-16T15:43:27.941010",
+        "view_class": "ShellView",
+        "sequence": "ShowView",
+        "view_id": "ShellView"
+    },
+    {
+        "time": "2018-03-16T15:43:31.803560",
+        "index": "1.0",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "text_widget_id": 3037534576,
+        "tags": "('welcome',)",
+        "text": "Python 3.4.2 (/usr/bin/python3)"
+    },
+    {
+        "time": "2018-03-16T15:43:31.824196",
+        "index": "1.31",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "text_widget_id": 3037534576,
+        "tags": "('io',)",
+        "text": "\n"
+    },
+    {
+        "time": "2018-03-16T15:43:31.832081",
+        "index": "2.0",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "text_widget_id": 3037534576,
+        "tags": "('toplevel', 'prompt')",
+        "text": ">>> "
+    },
+    {
+        "time": "2018-03-16T15:43:31.882297",
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:43:38.428602",
+        "sequence": "<Button-1>",
+        "widget": ".#3038406192"
+    },
+    {
+        "time": "2018-03-16T15:43:38.472329",
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:43:41.460581",
+        "sequence": "<Button-1>",
+        "widget": ".#3038406192.#3038406192#3037473072"
+    },
+    {
+        "time": "2018-03-16T15:43:41.889399",
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:43:42.266315",
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:43:45.309963",
+        "widget_class": "Notebook",
+        "sequence": "<Button-1>",
+        "widget_id": 3017304976
+    },
+    {
+        "time": "2018-03-16T15:43:49.620244",
+        "widget_class": "Combobox",
+        "sequence": "<Button-1>",
+        "widget_id": 3017327408
+    },
+    {
+        "time": "2018-03-16T15:43:54.258157",
+        "sequence": "<Button-1>",
+        "widget": ".3017302096.3017327728.3017327760.3017327408.popdown"
+    },
+    {
+        "time": "2018-03-16T15:44:01.483858",
+        "widget_class": "Notebook",
+        "sequence": "<Button-1>",
+        "widget_id": 3017304976
+    },
+    {
+        "time": "2018-03-16T15:44:03.339469",
+        "denied": "False",
+        "sequence": "Command",
+        "command_id": "show_options"
+    },
+    {
+        "time": "2018-03-16T15:44:03.397087",
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:44:04.874580",
+        "sequence": "<Button-1>",
+        "widget": ".#3038406192"
+    },
+    {
+        "time": "2018-03-16T15:44:04.924845",
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:44:05.461157",
+        "sequence": "<Button-1>",
+        "widget": ".#3038406192.#3038406192#3037473232"
+    },
+    {
+        "time": "2018-03-16T15:44:05.558975",
+        "denied": "False",
+        "sequence": "Command",
+        "command_id": "changelog"
+    },
+    {
+        "time": "2018-03-16T15:44:05.563925",
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:44:07.727984",
+        "sequence": "<Button-1>",
+        "widget": ".#3038406192"
+    },
+    {
+        "time": "2018-03-16T15:44:07.789692",
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:44:08.670120",
+        "sequence": "<Button-1>",
+        "widget": ".#3038406192.#3038406192#3037473232"
+    },
+    {
+        "time": "2018-03-16T15:44:09.463498",
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:44:09.660902",
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:44:14.174255",
+        "denied": "False",
+        "sequence": "Command",
+        "command_id": "about"
+    },
+    {
+        "time": "2018-03-16T15:44:14.269470",
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:44:17.537019",
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:44:19.730963",
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T15:44:22.611679",
+        "widget_class": "AutomaticPanedWindow",
+        "sequence": "<Button-1>",
+        "widget_id": 3037473360
+    },
+    {
+        "time": "2018-03-16T15:44:26.940046",
+        "widget_class": "AutomaticPanedWindow",
+        "sequence": "<Button-1>",
+        "widget_id": 3037473360
+    },
+    {
+        "time": "2018-03-16T15:44:30.075717",
+        "widget_class": "AutomaticPanedWindow",
+        "sequence": "<Button-1>",
+        "widget_id": 3037473360
+    },
+    {
+        "time": "2018-03-16T15:44:31.328738",
+        "widget_class": "AutomaticNotebook",
+        "sequence": "<Button-1>",
+        "widget_id": 3037474320
+    },
+    {
+        "time": "2018-03-16T15:44:33.364039",
+        "widget_class": "Frame",
+        "sequence": "<Button-1>",
+        "widget_id": 3037473296
+    },
+    {
+        "time": "2018-03-16T15:44:34.160437",
+        "widget_class": "AutomaticNotebook",
+        "sequence": "<Button-1>",
+        "widget_id": 3037474320
+    },
+    {
+        "time": "2018-03-16T15:44:35.474673",
+        "widget_class": "AutomaticPanedWindow",
+        "sequence": "<Button-1>",
+        "widget_id": 3037473360
+    },
+    {
+        "time": "2018-03-16T15:44:36.286909",
+        "widget_class": "AutomaticNotebook",
+        "sequence": "<Button-1>",
+        "widget_id": 3037474320
+    },
+    {
+        "time": "2018-03-16T15:44:37.115674",
+        "widget_class": "AutomaticPanedWindow",
+        "sequence": "<Button-1>",
+        "widget_id": 3037473360
+    },
+    {
+        "time": "2018-03-16T15:56:02.183589",
+        "sequence": "<Button-1>",
+        "text_widget_class": "CodeViewText",
+        "widget_class": "CodeViewText",
+        "text_widget_id": 3019034896,
+        "widget_id": 3019034896
+    },
+    {
+        "time": "2018-03-16T16:00:09.690458",
+        "widget_class": "Button",
+        "sequence": "<Button-1>",
+        "widget_id": 3037562672
+    },
+    {
+        "time": "2018-03-16T16:00:09.803861",
+        "sequence": "TextDelete",
+        "index2": "3.0",
+        "index1": "2.4",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "text_widget_id": 3037534576
+    },
+    {
+        "time": "2018-03-16T16:00:09.810971",
+        "index": "2.4",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "text_widget_id": 3037534576,
+        "tags": "('automagic', 'toplevel', 'command')",
+        "text": "%Run test_fft.py\n"
+    },
+    {
+        "time": "2018-03-16T16:00:09.824207",
+        "sequence": "TextDelete",
+        "index2": "3.0",
+        "index1": "3.0",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "text_widget_id": 3037534576
+    },
+    {
+        "time": "2018-03-16T16:00:09.832072",
+        "cmd_line": "%Run test_fft.py\n",
+        "sequence": "MagicCommand"
+    },
+    {
+        "time": "2018-03-16T16:00:11.412747",
+        "command_text": "%Run test_fft.py\n",
+        "sequence": "ShellCommand"
+    },
+    {
+        "time": "2018-03-16T16:00:22.106616",
+        "index": "3.0",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "text_widget_id": 3037534576,
+        "tags": "('io', 'stdout', 'vertically_spaced')",
+        "text": "["
+    },
+    {
+        "time": "2018-03-16T16:00:22.132212",
+        "index": "3.1",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "text_widget_id": 3037534576,
+        "tags": "('io', 'stdout')",
+        "text": " 0.06278993  0.06488588  0.07281824  0.09887424  0.95534003  0.06278357\n  0.10070043  0.21412248  1.96615885  0.17146702  0.08889269  0.06038904\n  0.04665913  0.03931854  0.03559757  0.03445034  0.03559757  0.03931854\n  0.04665913  0.06038904  0.08889269  0.17146702  1.96615885  0.21412248\n  0.10070043  0.06278357  0.95534003  0.09887424  0.07281824  0.06488588]\n14.5"
+    },
+    {
+        "time": "2018-03-16T16:00:22.157635",
+        "index": "8.4",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "text_widget_id": 3037534576,
+        "tags": "('io', 'stdout')",
+        "text": "\n0.06896551724137931\n"
+    },
+    {
+        "time": "2018-03-16T16:00:26.255749",
+        "widget_class": "Scrollbar",
+        "sequence": "<Button-1>",
+        "widget_id": 3019038480
+    },
+    {
+        "time": "2018-03-16T16:00:31.663989",
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T16:00:37.783338",
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T16:00:37.831714",
+        "index": "10.0",
+        "sequence": "TextInsert",
+        "text_widget_class": "ShellText",
+        "text_widget_context": "shell",
+        "text_widget_id": 3037534576,
+        "tags": "('toplevel', 'prompt', 'vertically_spaced')",
+        "text": ">>> "
+    },
+    {
+        "time": "2018-03-16T16:00:40.529085",
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "widget_id": 3059079472
+    },
+    {
+        "time": "2018-03-16T16:06:08.764392",
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3059079472
+    }
+]

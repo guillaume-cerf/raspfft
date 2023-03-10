@@ -1,0 +1,2 @@
+gamme acceleration : +-2g ;    frequence echantillonnage : 100Hz
+t(s);Ax(g);Ay(g);Az(g);F(Hz);TF(Ax);TF(Ay);TF(Az)

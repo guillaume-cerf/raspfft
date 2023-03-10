@@ -1,0 +1,60 @@
+import ADXL362
+import time
+import ConversionAccelsFIFO as conv
+import Watermark
+
+
+def FIFO(nbPointsNecessaires, plageaccel,offset,accel=ADXL362.ADXL362()):
+    listeAcc=[]                     #Liste renvoyee
+    wmk=Watermark.watermarkRead()   #Valeur limite remplissage FIFO
+    saturation = False              #Detection saturation acceleration
+    problemeAxe = False             #Detection probleme d'axe
+    seuil = False                   #Detection seuil
+    
+    #Tant que la liste n'est pas pleine et qu'aucun probleme de mesure n'est detecte
+    while len(listeAcc)<nbPointsNecessaires and not saturation:
+        accel.spi.cshigh=False              #Met la Chip en stand-by
+        status=accel.spi_read_reg(0x0B)     #Lecture du status
+        accel.spi.cshigh=True
+        #Watermark atteint ? (en booleen)
+        besoinLecture=Watermark.watermark(bin(status)[2:])
+        
+        #Si le watermark est atteint il faut vider le FIFO jusqu'au watermark
+        if besoinLecture :
+            #Lecture ensemble donnees
+            accel.spi.cshigh=False
+            values=accel.spi.xfer2([0x0D]+[0x00]*(wmk//6)*6)[1:]
+            accel.spi.cshigh=True
+            
+            #Suppression des series de 0 de fin de lecture
+            while values[-2:]==[0]*2:
+                del(values[-6:])
+            
+            #Conversion des donnees en g
+            conversion,saturation,problemeAxeInstant=conv.convert(values,plageaccel,offset)
+            
+            listeAcc+=conversion
+            
+            
+            if not seuil:       #Seuil jamais detecte avant
+                i=0
+                while i<len(conversion) and not seuil:
+                    #Depasse 10% de la valeur max ?
+                    if (conversion[i][0]**2+conversion[i][1]**2+conversion[i][2]**2)**0.5>=0.1*plageaccel:
+                        seuil = True
+                        #Conservation de x=20 donnees avant seuil
+                    i+=1	
+                        listeAcc=listeAcc[-len(conversion)+(i-20):]
+                if i==len(conversion) and not seuil:
+                    listeAcc=listeAcc[-20:]
+            
+            #Garde en memoire si le probleme d'axe a eu lieu avant
+            problemeAxe=bool(problemeAxe+problemeAxeInstant)
+            
+            #Laisse le temps au FIFO de se remplir legerement
+            time.sleep(.05)
+            
+            
+    if len(listeAcc)>nbPointsNecessaires:
+        listeAcc=listeAcc[0:nbPointsNecessaires]
+    return(listeAcc, saturation, problemeAxe)

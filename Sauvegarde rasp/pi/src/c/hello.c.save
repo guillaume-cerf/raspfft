@@ -1,0 +1,13 @@
+/* this a multiline comment
+second line of comment
+until end: */
+// comment end of line
+// simple program says hello
+#include  <stdio.h>
+
+main() {
+	printf("Hello World\n");
+
+
+
+}
