@@ -1,0 +1,42 @@
+------------------------------------------------------------
+/usr/lib/python3/dist-packages/pip/__main__.py run on Thu Jan 11 12:22:04 2018
+Downloading/unpacking python.qt4
+  Getting page https://pypi.python.org/simple/python.qt4/
+  Could not fetch URL https://pypi.python.org/simple/python.qt4/: 404 Client Error: Not Found (python.qt4 does not exist)
+  Will skip URL https://pypi.python.org/simple/python.qt4/ when looking for download links for python.qt4
+  Getting page https://pypi.python.org/simple/
+Cleaning up...
+Operation cancelled by user
+Exception information:
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/pip/basecommand.py", line 122, in main
+    status = self.run(options, args)
+  File "/usr/lib/python3/dist-packages/pip/commands/install.py", line 290, in run
+    requirement_set.prepare_files(finder, force_root_egg_info=self.bundle, bundle=self.bundle)
+  File "/usr/lib/python3/dist-packages/pip/req.py", line 1178, in prepare_files
+    url = finder.find_requirement(req_to_install, upgrade=self.upgrade)
+  File "/usr/lib/python3/dist-packages/pip/index.py", line 196, in find_requirement
+    url_name = self._find_url_name(Link(self.index_urls[0], trusted=True), url_name, req) or req.url_name
+  File "/usr/lib/python3/dist-packages/pip/index.py", line 361, in _find_url_name
+    page = self._get_page(index_url, req)
+  File "/usr/lib/python3/dist-packages/pip/index.py", line 568, in _get_page
+    session=self.session,
+  File "/usr/lib/python3/dist-packages/pip/index.py", line 688, in get_page
+    inst = cls(resp.text, resp.url, resp.headers, trusted=link.trusted)
+  File "/usr/lib/python3/dist-packages/pip/index.py", line 612, in __init__
+    self.parsed = html5lib.parse(self.content, namespaceHTMLElements=False)
+  File "/usr/share/python-wheels/html5lib-0.999-py2.py3-none-any.whl/html5lib/html5parser.py", line 28, in parse
+    return p.parse(doc, encoding=encoding)
+  File "/usr/share/python-wheels/html5lib-0.999-py2.py3-none-any.whl/html5lib/html5parser.py", line 224, in parse
+    parseMeta=parseMeta, useChardet=useChardet)
+  File "/usr/share/python-wheels/html5lib-0.999-py2.py3-none-any.whl/html5lib/html5parser.py", line 93, in _parse
+    self.mainLoop()
+  File "/usr/share/python-wheels/html5lib-0.999-py2.py3-none-any.whl/html5lib/html5parser.py", line 154, in mainLoop
+    for token in self.normalizedTokens():
+  File "/usr/share/python-wheels/html5lib-0.999-py2.py3-none-any.whl/html5lib/html5parser.py", line 210, in normalizedTokens
+    for token in self.tokenizer:
+  File "/usr/share/python-wheels/html5lib-0.999-py2.py3-none-any.whl/html5lib/tokenizer.py", line 67, in __iter__
+    while self.state():
+  File "/usr/share/python-wheels/html5lib-0.999-py2.py3-none-any.whl/html5lib/tokenizer.py", line 410, in closeTagOpenState
+    self.state = self.tagNameState
+KeyboardInterrupt

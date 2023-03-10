@@ -1,0 +1,311 @@
+[
+    {
+        "time": "2018-01-11T12:01:24.232603",
+        "sequence": "EditorTextCreated",
+        "editor_class": "Editor",
+        "editor_id": 3037603088,
+        "text_widget_id": 3037651888,
+        "text_widget_class": "CodeViewText"
+    },
+    {
+        "filename": "/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/IHM/matplotlibwidget_necessaire_linux.py",
+        "time": "2018-01-11T12:01:24.256049",
+        "sequence": "Open",
+        "editor_class": "Editor",
+        "editor_id": 3037603088,
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:01:25.325034",
+        "sequence": "TextDelete",
+        "text_widget_id": 3037651888,
+        "index1": "1.0",
+        "index2": "2.0",
+        "text_widget_class": "CodeViewText"
+    },
+    {
+        "time": "2018-01-11T12:01:25.561874",
+        "text": "# -*- coding: utf-8 -*-\n#\n# Copyright \u00a9 2009 Pierre Raybaut\n# Licensed under the terms of the MIT License\n\n\"\"\"\nMatplotlibWidget\n================\n\nExample of matplotlib widget for PyQt4\n\nCopyright \u00a9 2009 Pierre Raybaut\nThis software is licensed under the terms of the MIT License\n\nDerived from 'embedding_in_pyqt4.py':\nCopyright \u00a9 2005 Florent Rougon, 2006 Darren Dale\n\"\"\"\n\n__version__ = \"1.0.0\"\n\nfrom PyQt4.QtGui import QSizePolicy\nfrom PyQt4.QtCore import QSize\n\nfrom backend_qt4agg.py import FigureCanvasQTAgg as Canvas\nfrom matplotlib.figure import Figure\n\nfrom matplotlib import rcParams\nrcParams['font.size'] = 9\n\n\nclass MatplotlibWidget(Canvas):\n    \"\"\"\n    MatplotlibWidget inherits PyQt4.QtGui.QWidget\n    and matplotlib.backend_bases.FigureCanvasBase\n    \n    Options: option_name (default_value)\n    -------    \n    parent (None): parent widget\n    title (''): figure title\n    xlabel (''): X-axis label\n    ylabel (''): Y-axis label\n    xlim (None): X-axis limits ([min, max])\n    ylim (None): Y-axis limits ([min, max])\n    xscale ('linear'): X-axis scale\n    yscale ('linear'): Y-axis scale\n    width (4): width in inches\n    height (3): height in inches\n    dpi (100): resolution in dpi\n    hold (False): if False, figure will be cleared each time plot is called\n    \n    Widget attributes:\n    -----------------\n    figure: instance of matplotlib.figure.Figure\n    axes: figure axes\n    \n    Example:\n    -------\n    self.widget = MatplotlibWidget(self, yscale='log', hold=True)\n    from numpy import linspace\n    x = linspace(-10, 10)\n    self.widget.axes.plot(x, x**2)\n    self.wdiget.axes.plot(x, x**3)\n    \"\"\"\n    def __init__(self, parent=None, title='', xlabel='', ylabel='',\n                 xlim=None, ylim=None, xscale='linear', yscale='linear',\n                 width=4, height=3, dpi=100, hold=False):\n        self.figure = Figure(figsize=(width, height), dpi=dpi)\n        self.axes = self.figure.add_subplot(111)\n        self.axes.set_title(title)\n        self.axes.set_xlabel(xlabel)\n        self.axes.set_ylabel(ylabel)\n        if xscale is not None:\n            self.axes.set_xscale(xscale)\n        if yscale is not None:\n            self.axes.set_yscale(yscale)\n        if xlim is not None:\n            self.axes.set_xlim(*xlim)\n        if ylim is not None:\n            self.axes.set_ylim(*ylim)\n        self.axes.hold(hold)\n\n        Canvas.__init__(self, self.figure)\n        self.setParent(parent)\n\n        Canvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)\n        Canvas.updateGeometry(self)\n\n    def sizeHint(self):\n        w, h = self.get_width_height()\n        return QSize(w, h)\n\n    def minimumSizeHint(self):\n        return QSize(10, 10)\n\n\n\n#===============================================================================\n#   Example\n#===============================================================================\nif __name__ == '__main__':\n    import sys\n    from PyQt4.QtGui import QMainWindow, QApplication\n    from numpy import linspace\n    \n    class ApplicationWindow(QMainWindow):\n        def __init__(self):\n            QMainWindow.__init__(self)\n            self.mplwidget = MatplotlibWidget(self, title='Example',\n                                              xlabel='Linear scale',\n                                              ylabel='Log scale',\n                                              hold=True, yscale='log')\n            self.mplwidget.setFocus()\n            self.setCentralWidget(self.mplwidget)\n            self.plot(self.mplwidget.axes)\n            \n        def plot(self, axes):\n            x = linspace(-10, 10)\n            axes.plot(x, x**2)\n            axes.plot(x, x**3)\n        \n    app = QApplication(sys.argv)\n    win = ApplicationWindow()\n    win.show()\n    sys.exit(app.exec_())\n",
+        "sequence": "TextInsert",
+        "index": "1.0",
+        "tags": "()",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "view_id": 3037526864,
+        "time": "2018-01-11T12:01:25.750197",
+        "sequence": "ShowView",
+        "view_class": "ShellView"
+    },
+    {
+        "text_widget_context": "shell",
+        "tags": "('welcome',)",
+        "time": "2018-01-11T12:01:30.504176",
+        "text": "Python 3.4.2 (/usr/bin/python3)",
+        "sequence": "TextInsert",
+        "index": "1.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037527248
+    },
+    {
+        "text_widget_context": "shell",
+        "tags": "('io',)",
+        "time": "2018-01-11T12:01:30.514286",
+        "text": "\n",
+        "sequence": "TextInsert",
+        "index": "1.31",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037527248
+    },
+    {
+        "text_widget_context": "shell",
+        "tags": "('toplevel', 'prompt')",
+        "time": "2018-01-11T12:01:30.523156",
+        "text": ">>> ",
+        "sequence": "TextInsert",
+        "index": "2.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037527248
+    },
+    {
+        "time": "2018-01-11T12:01:30.568118",
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3059070992
+    },
+    {
+        "widget_class": "CodeViewText",
+        "sequence": "<Button-1>",
+        "widget_id": 3037651888,
+        "text_widget_id": 3037651888,
+        "time": "2018-01-11T12:01:33.814632",
+        "text_widget_class": "CodeViewText"
+    },
+    {
+        "time": "2018-01-11T12:01:56.486300",
+        "text": "m",
+        "sequence": "TextInsert",
+        "index": "24.5",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:01:56.569671",
+        "text": "a",
+        "sequence": "TextInsert",
+        "index": "24.6",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:01:57.468785",
+        "text": "t",
+        "sequence": "TextInsert",
+        "index": "24.7",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:01:57.498821",
+        "text": "p",
+        "sequence": "TextInsert",
+        "index": "24.8",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:01:57.529098",
+        "text": "l",
+        "sequence": "TextInsert",
+        "index": "24.9",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:01:57.559450",
+        "text": "o",
+        "sequence": "TextInsert",
+        "index": "24.10",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:01:57.589375",
+        "text": "t",
+        "sequence": "TextInsert",
+        "index": "24.11",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:01:59.107652",
+        "text": "l",
+        "sequence": "TextInsert",
+        "index": "24.12",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:02:00.000382",
+        "text": "i",
+        "sequence": "TextInsert",
+        "index": "24.13",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:02:00.031123",
+        "text": "b",
+        "sequence": "TextInsert",
+        "index": "24.14",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:02:00.065220",
+        "text": ".",
+        "sequence": "TextInsert",
+        "index": "24.15",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:02:00.962214",
+        "text": "b",
+        "sequence": "TextInsert",
+        "index": "24.16",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:02:00.994180",
+        "text": "a",
+        "sequence": "TextInsert",
+        "index": "24.17",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:02:01.097382",
+        "text": "c",
+        "sequence": "TextInsert",
+        "index": "24.18",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:02:01.161756",
+        "text": "k",
+        "sequence": "TextInsert",
+        "index": "24.19",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:02:01.228796",
+        "text": "e",
+        "sequence": "TextInsert",
+        "index": "24.20",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:02:02.113328",
+        "text": "n",
+        "sequence": "TextInsert",
+        "index": "24.21",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:02:02.143320",
+        "text": "d",
+        "sequence": "TextInsert",
+        "index": "24.22",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:02:02.174788",
+        "text": "s",
+        "sequence": "TextInsert",
+        "index": "24.23",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "time": "2018-01-11T12:02:03.085974",
+        "text": ".",
+        "sequence": "TextInsert",
+        "index": "24.24",
+        "tags": "None",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "filename": "/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/IHM/matplotlibwidget_necessaire_linux.py",
+        "time": "2018-01-11T12:02:05.242060",
+        "sequence": "Save",
+        "editor_class": "Editor",
+        "editor_id": 3037603088,
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037651888
+    },
+    {
+        "command_id": "save_file",
+        "time": "2018-01-11T12:02:05.271919",
+        "denied": "False",
+        "sequence": "Command"
+    },
+    {
+        "time": "2018-01-11T12:02:06.023815",
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "widget_id": 3059070992
+    },
+    {
+        "time": "2018-01-11T12:02:06.856380",
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3059070992
+    },
+    {
+        "time": "2018-01-11T12:02:06.968855",
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "widget_id": 3059070992
+    },
+    {
+        "time": "2018-01-11T13:02:22.100230",
+        "widget_class": "Workbench",
+        "sequence": "<FocusIn>",
+        "widget_id": 3059070992
+    },
+    {
+        "time": "2018-01-11T13:02:22.802226",
+        "widget_class": "Workbench",
+        "sequence": "<FocusOut>",
+        "widget_id": 3059070992
+    }
+]

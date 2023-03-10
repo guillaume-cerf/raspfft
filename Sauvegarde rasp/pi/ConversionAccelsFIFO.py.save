@@ -1,0 +1,44 @@
+from FuncLectureRegistre import *
+def convert(liste):
+    accel=[]
+    i=0
+    reg=bin(Lecture(0x2c)[0])[2:]	#on lit les parametres pour recuperer les plages d'acceleration stockees
+    reg=('0'*(8-len(reg))+reg)[:2]
+    if reg=='00':
+        plage=2		#permet de connaitre le nombre de G pour la conversion
+    elif reg=='01':
+        plage=4
+    else:
+        plage=8
+    print(plage)
+    while len(liste)>0:
+        i+=1
+        y=liste.pop(0)+liste.pop(0)*2**8        #comme pour x, seules les conditions des tests changent
+        z=liste.pop(0)+liste.pop(0)*2**8
+        x=liste.pop(0)+liste.pop(0)*2**8    #somme des deux octets pour traitement
+        if [x,y,z]!=[0,0,0]:
+            if x>=2**14:
+                return('la valeur {} ne correspond pas a un "x"'.format(x))
+                break
+            if x>=2**12:
+                x-=2**12+2**13
+                x-=2**12				#Complement a deux pour passer en negatif
+            if y>=2**15 or y-2**14<0:
+                return 'la valeur {} ne correspond pas a un "y"'.format(y),i 
+                break
+            y-=2**14
+            if y>=2**12:
+                y-=2**12+2**13
+                y-=2**12
+            if z-2**15<0 or z-2**14-2**15>=0:
+                return('la valeur {} ne correspond pas a un "z"'.format(z))
+                break
+            z-=2**15
+            if z>=2**12:
+                z-=2**12+2**13
+                z-=2**12
+    accel.append([x,y,z])
+    accelbis=[]    
+r i in accel:
+    accelbis=[[i[j]*plage/2048 for j in i] for i in accel]
+    return accel

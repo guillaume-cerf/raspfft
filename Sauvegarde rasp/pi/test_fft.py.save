@@ -1,0 +1,27 @@
+from numpy import linspace,sin
+from numpy import fft  #from scipy.fftpack import fft
+from pythonmatplotlib.pyplot import *
+
+
+N=30
+xmax=2
+X=linspace(0,xmax,N)
+te=xmax/(N-1)
+fe=1/te
+Y=[]
+for i in range(N):
+    Y.append(sin(12*X[i])+2*sin(24*X[i])) #periode T=2TT/6 donc 1 et f=6/2TT = 1
+
+F=linspace(0,fe,N) #ie un pas de fe/(N-1)
+
+TF=2*abs(fft.fft(Y))/N  #toujours 2/N pour avoir la bonne amplitude
+print(TF)
+print(fe)
+print(te)
+
+subplot(121)    
+plot(X,Y)
+-hold()
+subplot(122)    
+plot(F[0:N//2],TF[0:N//2])
+show()

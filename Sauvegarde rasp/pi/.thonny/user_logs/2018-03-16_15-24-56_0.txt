@@ -1,0 +1,1346 @@
+[
+    {
+        "editor_id": 3037174416,
+        "time": "2018-03-16T15:24:57.767914",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037223728,
+        "editor_class": "Editor",
+        "sequence": "EditorTextCreated"
+    },
+    {
+        "editor_id": 3037174416,
+        "time": "2018-03-16T15:24:57.785168",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037223728,
+        "filename": "/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/Tests/test_fft.py",
+        "sequence": "Open",
+        "editor_class": "Editor"
+    },
+    {
+        "sequence": "TextDelete",
+        "index2": "2.0",
+        "time": "2018-03-16T15:24:58.794857",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037223728,
+        "index1": "1.0"
+    },
+    {
+        "time": "2018-03-16T15:24:58.958659",
+        "tags": "()",
+        "index": "1.0",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3037223728,
+        "text": "from numpy import linspace,sin\nfrom numpy import fft  #from scipy.fftpack import fft\nfrom matplotlib.pyplot import *\n\n\nN=30\nxmax=2\nX=linspace(0,xmax,N)\nte=xmax/(N-1)\nfe=1/te\nY=[]\nfor i in range(N):\n    Y.append(sin(12*X[i])+2*sin(24*X[i])) #periode T=2TT/6 donc 1 et f=6/2TT = 1\n\nF=linspace(0,fe,N) #ie un pas de fe/(N-1)\n\nTF=2*abs(fft.fft(Y))/N  #toujours 2/N pour avoir la bonne amplitude\nprint(TF)\nprint(fe)\nprint(te)\n\nsubplot(121)    \nplot(X,Y)\nhold()\nsubplot(122)    \nplot(F[0:N//2],TF[0:N//2])\nshow()\n",
+        "sequence": "TextInsert"
+    },
+    {
+        "view_id": 3037097488,
+        "time": "2018-03-16T15:24:59.129769",
+        "sequence": "ShowView",
+        "view_class": "ShellView"
+    },
+    {
+        "time": "2018-03-16T15:25:02.691579",
+        "sequence": "TextInsert",
+        "index": "1.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "Python 3.4.2 (/usr/bin/python3)",
+        "tags": "('welcome',)",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:25:02.711878",
+        "sequence": "TextInsert",
+        "index": "1.31",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "\n",
+        "tags": "('io',)",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:25:02.719720",
+        "sequence": "TextInsert",
+        "index": "2.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": ">>> ",
+        "tags": "('toplevel', 'prompt')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:25:02.753446",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:25:08.737148",
+        "widget_id": 3016502768,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:25:13.725743",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016"
+    },
+    {
+        "time": "2018-03-16T15:25:13.793591",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:25:16.408977",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016.#3037972016#3037034640"
+    },
+    {
+        "sequence": "TextDelete",
+        "index2": "3.0",
+        "time": "2018-03-16T15:25:16.556598",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "index1": "2.4",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:25:16.563405",
+        "sequence": "TextInsert",
+        "index": "2.4",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "%cd '/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/Tests'\n%Run test_fft.py\n",
+        "tags": "('automagic', 'toplevel', 'command')",
+        "text_widget_context": "shell"
+    },
+    {
+        "sequence": "TextDelete",
+        "index2": "4.0",
+        "time": "2018-03-16T15:25:16.580982",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "index1": "4.0",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:25:16.590043",
+        "cmd_line": "%cd '/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/Tests'\n",
+        "sequence": "MagicCommand"
+    },
+    {
+        "time": "2018-03-16T15:25:16.603255",
+        "command_text": "%cd '/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/Tests'\n",
+        "sequence": "ShellCommand"
+    },
+    {
+        "time": "2018-03-16T15:25:16.604273",
+        "denied": "False",
+        "command_id": "run_current_script",
+        "sequence": "Command"
+    },
+    {
+        "time": "2018-03-16T15:25:16.607717",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:25:16.646086",
+        "sequence": "TextInsert",
+        "index": "3.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": ">>> ",
+        "tags": "('toplevel', 'prompt')",
+        "text_widget_context": "shell"
+    },
+    {
+        "sequence": "TextDelete",
+        "index2": "4.0",
+        "time": "2018-03-16T15:25:16.655369",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "index1": "4.0",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:25:16.662683",
+        "cmd_line": "%Run test_fft.py\n",
+        "sequence": "MagicCommand"
+    },
+    {
+        "time": "2018-03-16T15:25:18.185857",
+        "command_text": "%Run test_fft.py\n",
+        "sequence": "ShellCommand"
+    },
+    {
+        "time": "2018-03-16T15:25:28.638157",
+        "sequence": "TextInsert",
+        "index": "4.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "[",
+        "tags": "('io', 'stdout', 'vertically_spaced')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:25:28.656446",
+        "sequence": "TextInsert",
+        "index": "4.1",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": " 0.06278993  0.06488588  0.07281824  0.09887424  0.95534003  0.06278357\n  0.10070043  0.21412248  1.96615885  0.17146702  0.08889269  0.06038904\n  0.04665913  0.03931854  0.03559757  0.03445034  0.03559757  0.03931854\n  0.04665913  0.06038904  0.08889269  0.17146702  1.96615885  0.21412248\n  0.10070043  0.06278357  0.95534003  0.09887424  0.07281824  0.06488588]\n14.5\n0.06896551724137931\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:25:35.854335",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:25:45.858307",
+        "sequence": "TextInsert",
+        "index": "11.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": ">>> ",
+        "tags": "('toplevel', 'prompt', 'vertically_spaced')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:25:45.915610",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:25:53.909093",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016"
+    },
+    {
+        "time": "2018-03-16T15:25:53.977002",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:26:15.526063",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016.#3037972016#3038063344"
+    },
+    {
+        "time": "2018-03-16T15:26:16.160386",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:26:16.319903",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:26:26.310213",
+        "sequence": "<Button-1>",
+        "widget": ".__tk_filedialog.contents.f1.menu"
+    },
+    {
+        "time": "2018-03-16T15:26:29.351577",
+        "sequence": "<Button-1>",
+        "widget": ".__tk_filedialog.contents.icons.cHull.canvas"
+    },
+    {
+        "time": "2018-03-16T15:26:29.619773",
+        "sequence": "<Button-1>",
+        "widget": ".__tk_filedialog.contents.icons.cHull.canvas"
+    },
+    {
+        "time": "2018-03-16T15:26:31.091615",
+        "sequence": "<Button-1>",
+        "widget": ".__tk_filedialog.contents.icons.cHull.canvas"
+    },
+    {
+        "time": "2018-03-16T15:26:31.257367",
+        "sequence": "<Button-1>",
+        "widget": ".__tk_filedialog.contents.icons.cHull.canvas"
+    },
+    {
+        "time": "2018-03-16T15:26:33.667755",
+        "sequence": "<Button-1>",
+        "widget": ".__tk_filedialog.contents.icons.cHull.canvas"
+    },
+    {
+        "time": "2018-03-16T15:26:33.805653",
+        "sequence": "<Button-1>",
+        "widget": ".__tk_filedialog.contents.icons.cHull.canvas"
+    },
+    {
+        "editor_id": 3037126512,
+        "time": "2018-03-16T15:26:34.126936",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3016713232,
+        "editor_class": "Editor",
+        "sequence": "EditorTextCreated"
+    },
+    {
+        "editor_id": 3037126512,
+        "time": "2018-03-16T15:26:34.133992",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3016713232,
+        "filename": "/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/IHM/mainIHM.py",
+        "sequence": "Open",
+        "editor_class": "Editor"
+    },
+    {
+        "sequence": "TextDelete",
+        "index2": "2.0",
+        "time": "2018-03-16T15:26:34.148692",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3016713232,
+        "index1": "1.0"
+    },
+    {
+        "time": "2018-03-16T15:26:34.271049",
+        "tags": "()",
+        "index": "1.0",
+        "text_widget_class": "CodeViewText",
+        "text_widget_id": 3016713232,
+        "text": "import sys #impose par QT\nimport os\nfrom PyQt4.QtCore import * #impose par QT\nfrom PyQt4.QtGui import * #impose par QT\nfrom PyQt4 import *\n#import tkinter\nfrom page_reglages import Ui_Reglages\nfrom page_acquisitionzaloeil import Ui_Acquisition\nfrom numpy import linspace,sin\nfrom numpy import fft  #OU from scipy.fftpack import fft #on fait enuite uniquement fft(blabla)\nfrom random import *  #pour les donnees fictives\n\n##------------ Fenetre ACQUISITION avec relations\n\nclass Interface_Acquisition(QWidget): #pour une autre fenetre, ca peut etre QDialog ou QMainWindow ou QWidget\n    def __init__(self):\n        QWidget.__init__(self) #Appel explicite du constructeur de la classe mere, impose par python\n\n        #Instanciation et initialisation de l'interface Qt\n        self.ui = Ui_Acquisition() #class creee par Qt METTRE UN VRAI NOM\n        self.ui.setupUi(self)       #on lance la fonction definie dans la class\n\n        #initialisation parametres\n        global etat_comboBox_freq, etat_comboBox_accel   #en global pour dialoguer entre acquisition et reglages\n\n        self.ui.checkBox_accelx.setChecked(True) #par defaut coche ---- setChecked ou setCheckState\n        self.ui.checkBox_accely.setChecked(True) #par defaut coche\n        self.ui.checkBox_accelz.setCheckState(False) #par defaut non coche\n        self.ui.comboBox_FourrierTempo.setCurrentIndex(1) #par defaut indice 1 donc temporel\n        self.ui.progressBar.setValue(8)  #pour dire quelle valur mettre ou .value() pour consulter\n        etat_comboBox_freq = 0 #par defaut 200Hz\n        etat_comboBox_accel = 0 #par defaut 2g\n\n        self.T =[]  #ensemble des temps\n        self.F=[]   #futur ensemble des frequences pour fft\n        self.A1=[]  #ensemble des accel en x\n        self.A2=[]  #ensemble des accel en y\n        self.A3=[]  #ensemble des accel en z\n        self.Atot=[] #equivalent sortie accelero\n        self.TF1 =[] #futur ensemble des TF pour A1\n        self.TF2 =[] #futur ensemble des TF pour A2\n        self.TF3 =[] #futur ensemble des TF pour A3\n        \n        self.ui.matplotlibwidget.axes.set_title('Accelerations')\n        #self.ui.matplotlibwidget.axes.set_ylabel('log') #ou xscale\n        \n        # definition relations\n        self.connect(self.ui.PushButton_Fermer, SIGNAL('clicked()'), self.action_Fermer)\n        self.connect(self.ui.PushButton_Nouveau, SIGNAL('clicked()'), self.action_Nouveau)\n        self.connect(self.ui.PushButton_Reglages, SIGNAL('clicked()'), self.action_Reglages)\n        self.connect(self.ui.PushButton_Exporter, SIGNAL('clicked()'), self.action_Exporter)\n        self.connect(self.ui.comboBox_FourrierTempo, SIGNAL('currentIndexChanged(int)'), self.action_FourrierTempo)\n        self.connect(self.ui.checkBox_accelx, SIGNAL('clicked()'), self.action_accelxyz) #ou stateChanged(int)\n        self.connect(self.ui.checkBox_accely, SIGNAL('clicked()'), self.action_accelxyz)\n        self.connect(self.ui.checkBox_accelz, SIGNAL('clicked()'), self.action_accelxyz)\n        \n    def action_Fermer(self):\n        global interface\n        print('go fermer')\n        interface=0 #sans espace\n        \n    def action_Nouveau(self):\n        print('go nouveau')\n        self.acquerir()    \n        self.afficher()\n        \n    def action_Reglages(self):\n        global interface2\n        print('go reglages')\n        interface2 = Interface_Reglages()\n        interface2.show()\n        \n    def action_Exporter(self):\n        print('go exporter')\n        self.memorise_txt()\n        os.popen(\"recuperation_donnees.txt\")\n        \n    def action_FourrierTempo(self):\n        print(self.ui.comboBox_FourrierTempo.currentIndex())  # .currentText (0 ou 1) ou .currentIndex\n        self.afficher()\n        \n    def action_accelxyz(self):\n        print(self.ui.checkBox_accelx.checkState()) #renvoie 0 ou 2\n        print(self.ui.checkBox_accely.checkState())\n        print(self.ui.checkBox_accelz.checkState())\n        self.afficher()\n\n\n    def acquerir(self):\n        #test matplotlib\n        N=randint(50,60)\n        tmax = 2\n        fe=(N-1)/tmax\n        self.T = linspace(0,tmax,N)\n        self.F = linspace(0,fe,N)\n        self.F=self.F[0:N//2] #on coupe a la moitie pour non redondance dans l'affichage\n            \n\n        A = self.calcul_sin(self.T) #acquisition donnees fictives\n        self.A1=A[0]  #accel en x\n        self.A2=A[1]\n        self.A3=A[2]\n        self.Atot=A[3]  #cumul accel type sortie accelero\n\n        self.TF1=2*abs(fft.fft(self.A1))/N  #TF de l'acceleration en x\n        self.TF1=self.TF1[0:N//2]\n        self.TF2=2*abs(fft.fft(self.A2))/N  #TF de l'acceleration en y\n        self.TF2=self.TF2[0:N//2]\n        self.TF3=2*abs(fft.fft(self.A3))/N  #TF de l'acceleration en z\n        self.TF3=self.TF3[0:N//2]\n\n        for i in range(N):   ##on raccourci les nombres en CS\n            self.T[i]=self.nCS(self.T[i])\n            if i<N//2:\n                self.F[i]=self.nCS(self.F[i])\n                self.TF1[i]=self.nCS(self.TF1[i])\n                self.TF2[i]=self.nCS(self.TF2[i])\n                self.TF3[i]=self.nCS(self.TF3[i])\n        \n    def afficher(self):\n        \n        self.X1=[]\n        self.X2=[]\n        self.X3=[]\n        self.Y1=[] #on affichera tout le temps Y1,Y2,Y3 quitte a etre vide\n        self.Y2=[]\n        self.Y3=[]\n        self.c1=self.ui.checkBox_accelx.checkState() #lecture etat checkbox 0 ou 2\n        self.c2=self.ui.checkBox_accely.checkState()\n        self.c3=self.ui.checkBox_accelz.checkState()\n        self.c4=self.ui.comboBox_FourrierTempo.currentIndex() #0 pour Fourrier et 1 pour temporel\n        \n        if self.c1==2 and self.c4==1:  #si accelx coche et temporel\n            self.Y1=self.A1\n            self.X1=self.T\n        if self.c2==2 and self.c4==1:\n            self.Y2=self.A2\n            self.X2=self.T\n        if self.c3==2 and self.c4==1:\n            self.Y3=self.A3\n            self.X3=self.T\n\n        if self.c1==2 and self.c4==0:  #si accelx coche et Fourrier\n            self.Y1=self.TF1\n            self.X1=self.F\n        if self.c2==2 and self.c4==0:\n            self.Y2=self.TF2\n            self.X2=self.F\n        if self.c3==2 and self.c4==0:\n            self.Y3=self.TF3\n            self.X3=self.F\n\n            \n        self.ui.matplotlibwidget.axes.hold(False) #on tej le plot precedent   \n        self.ui.matplotlibwidget.axes.plot(self.X1,self.Y1,'r.-')   # . pour avoir les points et - pour les relier --> par exemple'r.-'  \n        self.ui.matplotlibwidget.axes.hold(True) #on maintient\n        self.ui.matplotlibwidget.axes.plot(self.X2,self.Y2,'b.-')\n        self.ui.matplotlibwidget.axes.hold(True)\n        self.ui.matplotlibwidget.axes.plot(self.X3,self.Y3,'g.-')\n        \n        self.ui.matplotlibwidget.draw() ##important\n        \n    def calcul_sin(self,T):\n        A1=[]\n        A2=[]  #sont des intermediaires de la fonction (pas de self)\n        A3=[]\n        L=[]\n        amplitude=[2*random(),4*random(),3*random()]\n        for i in T:\n            a1,a2,a3=self.nCS(amplitude[0]*sin(3*i)),self.nCS(amplitude[1]*sin(6*i+1)),self.nCS(amplitude[2]*sin(12*i+2))  #2pi/T = 3 ie T=2\n            A1.append(a1)\n            A2.append(a2)\n            A3.append(a3)\n            L.append([a1,a2,a3]) #donnees fictives accelero\n        return [A1,A2,A3,L]\n    \n    def nCS(self,nombre):\n        \"\"\"reduit les chiffres signicatifs a n\"\"\"\n        n=3\n        facteur=10**n\n        return int(facteur*nombre)/facteur\n    \n    def memorise_txt(self): #il faut avoir fait nouveau pour tester\n        \"\"\"passe les donnees dans un fichier txt\"\"\"\n        fich=open('recuperation_donnees.txt','w')\n        fich.write('t(s)                Ax(m/s2)            Ay(m/s2)               Az(m/s2)             F(Hz)              TF(Ax)               TF(Ay)          TF(Az)\\n')\n        for i in range(len(self.T)):\n            a,b,c,d=str(self.T[i]),str(self.Atot[i][0]),str(self.Atot[i][1]),str(self.Atot[i][2])\n            if i<len(self.F):\n                e,f,g,h=str(self.F[i]),str(self.TF1[i]),str(self.TF2[i]),str(self.TF3[i])\n            else:\n                e,f,g,h='','','',''\n            fich.write(a)\n            fich.write('                ') ##avec 4 tabulations tout le temps pour bien separer et avoir un passage propre sur excel\n            fich.write(b)\n            fich.write('                ')\n            fich.write(c)\n            fich.write('                ')\n            fich.write(d)\n            fich.write('                ')\n            fich.write(e)\n            fich.write('                ')\n            fich.write(f)\n            fich.write('                ')\n            fich.write(g)\n            fich.write('                ')\n            fich.write(h)\n            fich.write('\\n')\n        fich.close()\n\n\n\n###----------------Fenetre REGLAGES avec relations\n        \nclass Interface_Reglages(QWidget): #pour une autre fenetre, ca peut etre QDialog ou QMainWindow ou QWidget\n    def __init__(self):\n        QWidget.__init__(self) #Appel explicite du constructeur de la classe mere, impose par python\n\n        #Instanciation et initialisation de l'interface Qt\n        self.ui2 = Ui_Reglages()\n        self.ui2.setupUi(self)\n        #initialisation combobox\n        self.ui2.comboBox_freq.setCurrentIndex(etat_comboBox_freq) #pour memoriser ce qui a ete fait avant\n        self.ui2.comboBox_accel.setCurrentIndex(etat_comboBox_accel)\n\n        self.connect(self.ui2.PushButton_retour, SIGNAL('clicked()'), self.action_retour)\n        self.connect(self.ui2.PushButton_valider, SIGNAL('clicked()'), self.action_valider)\n\n    def action_retour(self):\n        global interface2\n        print('go retour')\n        interface2=0 #sans enregistrer les modif\n\n    def action_valider(self):\n        global etat_comboBox_freq, etat_comboBox_accel, interface2\n        print('go valider')\n        etat_comboBox_freq = self.ui2.comboBox_freq.currentIndex()\n        etat_comboBox_accel = self.ui2.comboBox_accel.currentIndex()\n        print(etat_comboBox_accel)\n        print(etat_comboBox_freq)\n        interface2=0  #il faudra faire de vraies modif sur l'accelero\n    \n###Reglages.showFullScreen()\n###Reglages.showMaximized()\n\n#C:\\Users\\cyril\\Downloads\\WinPython-32bit-3.3.5.9\\python-3.3.5\\Lib\\site-packages\\PyQt4\\doc\\html       \n\n\n\n###------------- Lesture du MAIN pour lancer l'algo\n\n#Test de l'application\nif __name__==\"__main__\":\n    appUI = QApplication(sys.argv) #Instanciation de l'application (pour intercepter les mouvements de souris etc...)\n    interface = Interface_Acquisition() #Instanciation de l'interface\n    #interface = Interface_Reglages()  #l'un ou l'autre pour les tests\n    ##interface.resize(680,320)\n    ##interface.showMaximized()  ##pas utile car n'est lu qu'une fois\n    interface.show() #Affichage de l'interface\n    sys.exit(appUI.exec_()) #Execution de l'application\n    \n",
+        "sequence": "TextInsert"
+    },
+    {
+        "time": "2018-03-16T15:26:34.449385",
+        "denied": "False",
+        "command_id": "open_file",
+        "sequence": "Command"
+    },
+    {
+        "time": "2018-03-16T15:26:34.456557",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:26:42.834480",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016"
+    },
+    {
+        "time": "2018-03-16T15:26:42.894657",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:26:45.398549",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016.#3037972016#3037034640"
+    },
+    {
+        "sequence": "TextDelete",
+        "index2": "12.0",
+        "time": "2018-03-16T15:26:45.514547",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "index1": "11.4",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:26:45.521765",
+        "sequence": "TextInsert",
+        "index": "11.4",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "%cd '/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/IHM'\n%Run mainIHM.py\n",
+        "tags": "('automagic', 'toplevel', 'command')",
+        "text_widget_context": "shell"
+    },
+    {
+        "sequence": "TextDelete",
+        "index2": "13.0",
+        "time": "2018-03-16T15:26:45.536850",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "index1": "13.0",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:26:45.545929",
+        "cmd_line": "%cd '/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/IHM'\n",
+        "sequence": "MagicCommand"
+    },
+    {
+        "time": "2018-03-16T15:26:45.561736",
+        "command_text": "%cd '/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/IHM'\n",
+        "sequence": "ShellCommand"
+    },
+    {
+        "time": "2018-03-16T15:26:45.562678",
+        "denied": "False",
+        "command_id": "run_current_script",
+        "sequence": "Command"
+    },
+    {
+        "time": "2018-03-16T15:26:45.569776",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:26:45.604826",
+        "sequence": "TextInsert",
+        "index": "12.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": ">>> ",
+        "tags": "('toplevel', 'prompt')",
+        "text_widget_context": "shell"
+    },
+    {
+        "sequence": "TextDelete",
+        "index2": "13.0",
+        "time": "2018-03-16T15:26:45.614576",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "index1": "13.0",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:26:45.621855",
+        "cmd_line": "%Run mainIHM.py\n",
+        "sequence": "MagicCommand"
+    },
+    {
+        "time": "2018-03-16T15:26:47.301790",
+        "command_text": "%Run mainIHM.py\n",
+        "sequence": "ShellCommand"
+    },
+    {
+        "time": "2018-03-16T15:27:04.958836",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:27:20.098602",
+        "sequence": "TextInsert",
+        "index": "13.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "g",
+        "tags": "('io', 'stdout', 'vertically_spaced')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:20.126784",
+        "sequence": "TextInsert",
+        "index": "13.1",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "o nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:24.657561",
+        "sequence": "TextInsert",
+        "index": "14.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:28.154438",
+        "sequence": "TextInsert",
+        "index": "15.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:34.100458",
+        "sequence": "TextInsert",
+        "index": "16.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:37.037176",
+        "sequence": "TextInsert",
+        "index": "17.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:40.304048",
+        "sequence": "TextInsert",
+        "index": "18.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:43.358149",
+        "sequence": "TextInsert",
+        "index": "19.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:46.764901",
+        "sequence": "TextInsert",
+        "index": "20.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go fermer",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:46.805865",
+        "sequence": "TextInsert",
+        "index": "20.9",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:46.903891",
+        "sequence": "TextInsert",
+        "index": "21.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "Traceback (most recent call last):\n",
+        "tags": "('io', 'stderr')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:46.918447",
+        "sequence": "TextInsert",
+        "index": "22.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "  ",
+        "tags": "('io', 'stderr')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:46.924690",
+        "sequence": "TextInsert",
+        "index": "22.2",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "File \"/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/IHM/mainIHM.py\", line 260, in <module>",
+        "tags": "('io', 'stderr', 'hyperlink')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:46.930660",
+        "sequence": "TextInsert",
+        "index": "22.107",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "\n",
+        "tags": "('io', 'stderr')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:46.936479",
+        "sequence": "TextInsert",
+        "index": "23.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "    sys.exit(appUI.exec_()) #Execution de l'application\n",
+        "tags": "('io', 'stderr')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:46.942696",
+        "sequence": "TextInsert",
+        "index": "24.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "SystemExit: 0\n",
+        "tags": "('io', 'stderr')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:27:47.074550",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:27:47.121504",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:27:47.125177",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:27:47.259929",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:27:47.267907",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:27:49.642282",
+        "sequence": "TextInsert",
+        "index": "25.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": ">>> ",
+        "tags": "('toplevel', 'prompt', 'vertically_spaced')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:28:00.104629",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:28:30.085849",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016"
+    },
+    {
+        "time": "2018-03-16T15:28:30.129629",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:28:30.832655",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016.#3037972016#3037034640"
+    },
+    {
+        "sequence": "TextDelete",
+        "index2": "26.0",
+        "time": "2018-03-16T15:28:30.969037",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "index1": "25.4",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:28:30.976149",
+        "sequence": "TextInsert",
+        "index": "25.4",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "%Run mainIHM.py\n",
+        "tags": "('automagic', 'toplevel', 'command')",
+        "text_widget_context": "shell"
+    },
+    {
+        "sequence": "TextDelete",
+        "index2": "26.0",
+        "time": "2018-03-16T15:28:30.990822",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "index1": "26.0",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:28:30.998221",
+        "cmd_line": "%Run mainIHM.py\n",
+        "sequence": "MagicCommand"
+    },
+    {
+        "time": "2018-03-16T15:28:32.568712",
+        "command_text": "%Run mainIHM.py\n",
+        "sequence": "ShellCommand"
+    },
+    {
+        "time": "2018-03-16T15:28:32.580225",
+        "denied": "False",
+        "command_id": "run_current_script",
+        "sequence": "Command"
+    },
+    {
+        "time": "2018-03-16T15:28:32.585243",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:28:49.756867",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:29:03.676899",
+        "sequence": "TextInsert",
+        "index": "26.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "g",
+        "tags": "('io', 'stdout', 'vertically_spaced')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:03.684830",
+        "sequence": "TextInsert",
+        "index": "26.1",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "o nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:09.517925",
+        "sequence": "TextInsert",
+        "index": "27.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:13.836926",
+        "sequence": "TextInsert",
+        "index": "28.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "2\n2",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:13.876164",
+        "sequence": "TextInsert",
+        "index": "29.1",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "\n2\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:16.753515",
+        "sequence": "TextInsert",
+        "index": "31.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "2\n2\n0\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:21.310788",
+        "sequence": "TextInsert",
+        "index": "34.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "2\n2\n2\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:27.072873",
+        "sequence": "TextInsert",
+        "index": "37.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:32.054266",
+        "sequence": "TextInsert",
+        "index": "38.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "2\n2\n0\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:35.097022",
+        "sequence": "TextInsert",
+        "index": "41.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "2\n0",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:35.134159",
+        "sequence": "TextInsert",
+        "index": "42.1",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "\n0\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:38.012308",
+        "sequence": "TextInsert",
+        "index": "44.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:45.835383",
+        "sequence": "TextInsert",
+        "index": "45.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go nouveau",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:45.865350",
+        "sequence": "TextInsert",
+        "index": "45.10",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:50.059185",
+        "sequence": "TextInsert",
+        "index": "46.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:29:57.131733",
+        "sequence": "TextInsert",
+        "index": "47.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go nouveau\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:30:04.388584",
+        "sequence": "TextInsert",
+        "index": "48.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "0\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:30:11.195413",
+        "sequence": "TextInsert",
+        "index": "49.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go reglages\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:30:26.017605",
+        "sequence": "TextInsert",
+        "index": "50.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go valider\n0\n0\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:30:27.657255",
+        "sequence": "TextInsert",
+        "index": "53.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go reglages\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:30:32.619202",
+        "sequence": "TextInsert",
+        "index": "54.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go valider",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:30:32.719867",
+        "sequence": "TextInsert",
+        "index": "54.10",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "\n0\n0\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:30:35.597601",
+        "sequence": "TextInsert",
+        "index": "57.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go exporter\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:31:09.388209",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:31:14.436598",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:31:54.680589",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:32:04.949887",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:18.680226",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:18.946044",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:19.158566",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:21.990872",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:29.958358",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:30.278618",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:30.454370",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:30.648741",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:30.790576",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:30.983057",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:31.159853",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:31.526591",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:31.702715",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:31.862926",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:32.038781",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:32.234416",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:32.390448",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:32.547422",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:32.902633",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:33.110527",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:33.670682",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:38.406286",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:38.614653",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:38.774453",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:38.966642",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:39.479727",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:39.654852",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:39.831448",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:40.007613",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    },
+    {
+        "time": "2018-03-16T15:33:44.448638",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:33:58.223102",
+        "sequence": "TextInsert",
+        "index": "58.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "1\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:34:13.611228",
+        "sequence": "TextInsert",
+        "index": "59.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go exporter\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:35:20.108081",
+        "sequence": "TextInsert",
+        "index": "60.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "go fermer\n",
+        "tags": "('io', 'stdout')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:35:20.183459",
+        "sequence": "TextInsert",
+        "index": "61.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "Traceback (most recent call last):\n",
+        "tags": "('io', 'stderr')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:35:20.190259",
+        "sequence": "TextInsert",
+        "index": "62.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "  ",
+        "tags": "('io', 'stderr')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:35:20.196067",
+        "sequence": "TextInsert",
+        "index": "62.2",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "File \"/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/IHM/mainIHM.py\", line 260, in <module>",
+        "tags": "('io', 'stderr', 'hyperlink')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:35:20.202104",
+        "sequence": "TextInsert",
+        "index": "62.107",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "\n",
+        "tags": "('io', 'stderr')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:35:20.208171",
+        "sequence": "TextInsert",
+        "index": "63.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "    sys.exit(appUI.exec_()) #Execution de l'application\n",
+        "tags": "('io', 'stderr')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:35:20.214464",
+        "sequence": "TextInsert",
+        "index": "64.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": "SystemExit: 0\n",
+        "tags": "('io', 'stderr')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:35:22.194059",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:35:23.034411",
+        "sequence": "TextInsert",
+        "index": "65.0",
+        "text_widget_class": "ShellText",
+        "text_widget_id": 3037097936,
+        "text": ">>> ",
+        "tags": "('toplevel', 'prompt', 'vertically_spaced')",
+        "text_widget_context": "shell"
+    },
+    {
+        "time": "2018-03-16T15:35:23.843024",
+        "widget_id": 3037036144,
+        "sequence": "<Button-1>",
+        "widget_class": "EditorNotebook"
+    },
+    {
+        "time": "2018-03-16T15:35:24.631539",
+        "widget_id": 3037036144,
+        "sequence": "<Button-1>",
+        "widget_class": "EditorNotebook"
+    },
+    {
+        "time": "2018-03-16T15:35:25.988851",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016"
+    },
+    {
+        "time": "2018-03-16T15:35:26.069803",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:35:36.491297",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:35:38.223703",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016"
+    },
+    {
+        "time": "2018-03-16T15:35:38.309620",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:35:48.362975",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016.#3037972016#3037034960"
+    },
+    {
+        "time": "2018-03-16T15:35:48.807585",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:35:48.921188",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:36:02.718598",
+        "denied": "False",
+        "command_id": "about",
+        "sequence": "Command"
+    },
+    {
+        "time": "2018-03-16T15:36:02.772342",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:36:03.585092",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016"
+    },
+    {
+        "time": "2018-03-16T15:36:03.700984",
+        "widget_id": 3058641200,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:36:07.039565",
+        "sequence": "<Button-1>",
+        "widget": ".#3037972016"
+    },
+    {
+        "time": "2018-03-16T15:36:07.149644",
+        "widget_id": 3058641200,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-16T15:36:22.417918",
+        "widget_id": 3007627120,
+        "sequence": "<Button-1>",
+        "widget_class": "Scrollbar"
+    }
+]

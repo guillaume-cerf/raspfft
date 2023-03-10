@@ -1,0 +1,195 @@
+[
+    {
+        "time": "2018-03-18T09:55:40.282051",
+        "view_class": "HelpView",
+        "sequence": "ShowView",
+        "view_id": "HelpView"
+    },
+    {
+        "editor_class": "Editor",
+        "text_widget_id": 3037317904,
+        "sequence": "EditorTextCreated",
+        "editor_id": 3037317328,
+        "text_widget_class": "CodeViewText",
+        "time": "2018-03-18T09:55:40.913895"
+    },
+    {
+        "editor_class": "Editor",
+        "text_widget_id": 3037317904,
+        "filename": "/home/pi/IHM finale/page_reglagesv2.py",
+        "sequence": "Open",
+        "editor_id": 3037317328,
+        "text_widget_class": "CodeViewText",
+        "time": "2018-03-18T09:55:40.933992"
+    },
+    {
+        "text_widget_id": 3037317904,
+        "index1": "1.0",
+        "sequence": "TextDelete",
+        "time": "2018-03-18T09:55:41.903742",
+        "text_widget_class": "CodeViewText",
+        "index2": "2.0"
+    },
+    {
+        "text_widget_id": 3037317904,
+        "text": "# -*- coding: utf-8 -*-\n\n# Form implementation generated from reading ui file 'C:\\Users\\cyril\\Downloads\\page_reglagesv2.ui'\n#\n# Created by: PyQt4 UI code generator 4.11.4\n#\n# WARNING! All changes made in this file will be lost!\n\nfrom PyQt4 import QtCore, QtGui\n\ntry:\n    _fromUtf8 = QtCore.QString.fromUtf8\nexcept AttributeError:\n    def _fromUtf8(s):\n        return s\n\ntry:\n    _encoding = QtGui.QApplication.UnicodeUTF8\n    def _translate(context, text, disambig):\n        return QtGui.QApplication.translate(context, text, disambig, _encoding)\nexcept AttributeError:\n    def _translate(context, text, disambig):\n        return QtGui.QApplication.translate(context, text, disambig)\n\nclass Ui_Reglages(object):\n    def setupUi(self, Reglages):\n        Reglages.setObjectName(_fromUtf8(\"Reglages\"))\n        #Reglages.resize(518, 312)\n        #Reglages.setMaximumSize(QtCore.QSize(518, 512))\n        Reglages.showMaximized()  #plein \u00e9cran\n        #Reglages.showFullScreen()  #affichage plein ecran sans pouvoir reduire fermer etc\n        self.gridLayout = QtGui.QGridLayout(Reglages)\n        self.gridLayout.setObjectName(_fromUtf8(\"gridLayout\"))\n        self.verticalLayout_5 = QtGui.QVBoxLayout()\n        self.verticalLayout_5.setObjectName(_fromUtf8(\"verticalLayout_5\"))\n        self.PushButton_retour = QtGui.QPushButton(Reglages)\n        self.PushButton_retour.setObjectName(_fromUtf8(\"PushButton_retour\"))\n        self.verticalLayout_5.addWidget(self.PushButton_retour)\n        self.PushButton_valider = QtGui.QPushButton(Reglages)\n        self.PushButton_valider.setObjectName(_fromUtf8(\"PushButton_valider\"))\n        self.verticalLayout_5.addWidget(self.PushButton_valider)\n        self.gridLayout.addLayout(self.verticalLayout_5, 3, 6, 1, 1)\n        self.verticalLayout_3 = QtGui.QVBoxLayout()\n        self.verticalLayout_3.setObjectName(_fromUtf8(\"verticalLayout_3\"))\n        self.label_vide_1 = QtGui.QLabel(Reglages)\n        self.label_vide_1.setText(_fromUtf8(\"\"))\n        self.label_vide_1.setObjectName(_fromUtf8(\"label_vide_1\"))\n        self.verticalLayout_3.addWidget(self.label_vide_1)\n        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)\n        self.verticalLayout_3.addItem(spacerItem)\n        self.label_freq_2 = QtGui.QLabel(Reglages)\n        self.label_freq_2.setObjectName(_fromUtf8(\"label_freq_2\"))\n        self.verticalLayout_3.addWidget(self.label_freq_2)\n        spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)\n        self.verticalLayout_3.addItem(spacerItem1)\n        self.label_nbech2 = QtGui.QLabel(Reglages)\n        self.label_nbech2.setObjectName(_fromUtf8(\"label_nbech2\"))\n        self.verticalLayout_3.addWidget(self.label_nbech2)\n        self.gridLayout.addLayout(self.verticalLayout_3, 1, 5, 1, 1)\n        self.verticalLayout_2 = QtGui.QVBoxLayout()\n        self.verticalLayout_2.setObjectName(_fromUtf8(\"verticalLayout_2\"))\n        self.comboBox_accel = QtGui.QComboBox(Reglages)\n        self.comboBox_accel.setObjectName(_fromUtf8(\"comboBox_accel\"))\n        self.comboBox_accel.addItem(_fromUtf8(\"\"))\n        self.comboBox_accel.addItem(_fromUtf8(\"\"))\n        self.comboBox_accel.addItem(_fromUtf8(\"\"))\n        self.verticalLayout_2.addWidget(self.comboBox_accel)\n        spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)\n        self.verticalLayout_2.addItem(spacerItem2)\n        self.comboBox_freq = QtGui.QComboBox(Reglages)\n        self.comboBox_freq.setObjectName(_fromUtf8(\"comboBox_freq\"))\n        self.comboBox_freq.addItem(_fromUtf8(\"\"))\n        self.comboBox_freq.addItem(_fromUtf8(\"\"))\n        self.comboBox_freq.addItem(_fromUtf8(\"\"))\n        self.verticalLayout_2.addWidget(self.comboBox_freq)\n        spacerItem3 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)\n        self.verticalLayout_2.addItem(spacerItem3)\n        self.comboBox_nbech = QtGui.QComboBox(Reglages)\n        self.comboBox_nbech.setObjectName(_fromUtf8(\"comboBox_nbech\"))\n        self.comboBox_nbech.addItem(_fromUtf8(\"\"))\n        self.comboBox_nbech.addItem(_fromUtf8(\"\"))\n        self.comboBox_nbech.addItem(_fromUtf8(\"\"))\n        self.comboBox_nbech.addItem(_fromUtf8(\"\"))\n        self.verticalLayout_2.addWidget(self.comboBox_nbech)\n        self.gridLayout.addLayout(self.verticalLayout_2, 1, 3, 1, 1)\n        self.verticalLayout = QtGui.QVBoxLayout()\n        self.verticalLayout.setObjectName(_fromUtf8(\"verticalLayout\"))\n        self.label_accel = QtGui.QLabel(Reglages)\n        self.label_accel.setObjectName(_fromUtf8(\"label_accel\"))\n        self.verticalLayout.addWidget(self.label_accel)\n        spacerItem4 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)\n        self.verticalLayout.addItem(spacerItem4)\n        self.label_freq = QtGui.QLabel(Reglages)\n        self.label_freq.setObjectName(_fromUtf8(\"label_freq\"))\n        self.verticalLayout.addWidget(self.label_freq)\n        spacerItem5 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)\n        self.verticalLayout.addItem(spacerItem5)\n        self.label_nbech = QtGui.QLabel(Reglages)\n        self.label_nbech.setMaximumSize(QtCore.QSize(16777215, 16777215))\n        self.label_nbech.setObjectName(_fromUtf8(\"label_nbech\"))\n        self.verticalLayout.addWidget(self.label_nbech)\n        self.gridLayout.addLayout(self.verticalLayout, 1, 2, 1, 1)\n        self.verticalLayout_4 = QtGui.QVBoxLayout()\n        self.verticalLayout_4.setObjectName(_fromUtf8(\"verticalLayout_4\"))\n        self.label_2 = QtGui.QLabel(Reglages)\n        self.label_2.setText(_fromUtf8(\"\"))\n        self.label_2.setObjectName(_fromUtf8(\"label_2\"))\n        self.verticalLayout_4.addWidget(self.label_2)\n        spacerItem6 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)\n        self.verticalLayout_4.addItem(spacerItem6)\n        self.label_valfmax = QtGui.QLabel(Reglages)\n        self.label_valfmax.setObjectName(_fromUtf8(\"label_valfmax\"))\n        self.verticalLayout_4.addWidget(self.label_valfmax)\n        spacerItem7 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)\n        self.verticalLayout_4.addItem(spacerItem7)\n        self.label_valresolution = QtGui.QLabel(Reglages)\n        self.label_valresolution.setObjectName(_fromUtf8(\"label_valresolution\"))\n        self.verticalLayout_4.addWidget(self.label_valresolution)\n        self.gridLayout.addLayout(self.verticalLayout_4, 1, 6, 1, 1)\n        spacerItem8 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)\n        self.gridLayout.addItem(spacerItem8, 0, 3, 1, 1)\n        spacerItem9 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)\n        self.gridLayout.addItem(spacerItem9, 2, 6, 1, 1)\n        spacerItem10 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)\n        self.gridLayout.addItem(spacerItem10, 1, 4, 1, 1)\n        spacerItem11 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)\n        self.gridLayout.addItem(spacerItem11, 1, 1, 1, 1)\n        spacerItem12 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)\n        self.gridLayout.addItem(spacerItem12, 4, 6, 1, 1)\n        spacerItem13 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)\n        self.gridLayout.addItem(spacerItem13, 2, 7, 1, 1)\n        spacerItem14 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)\n        self.gridLayout.addItem(spacerItem14, 1, 0, 1, 1)\n        spacerItem15 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)\n        self.gridLayout.addItem(spacerItem15, 2, 8, 1, 1)\n\n        self.retranslateUi(Reglages)\n        QtCore.QMetaObject.connectSlotsByName(Reglages)\n\n    def retranslateUi(self, Reglages):\n        Reglages.setWindowTitle(_translate(\"Reglages\", \"REGLAGES\", None))\n        self.PushButton_retour.setText(_translate(\"Reglages\", \"Retour\", None))\n        self.PushButton_valider.setText(_translate(\"Reglages\", \"Valider\", None))\n        self.label_freq_2.setText(_translate(\"Reglages\", \"Fr\u00e9quence maximale mesurable :\", None))\n        self.label_nbech2.setText(_translate(\"Reglages\", \"      R\u00e9solution en fr\u00e9quence :\", None))\n        self.comboBox_accel.setItemText(0, _translate(\"Reglages\", \"      \u00b1 2g\", None))\n        self.comboBox_accel.setItemText(1, _translate(\"Reglages\", \"      \u00b1 4g\", None))\n        self.comboBox_accel.setItemText(2, _translate(\"Reglages\", \"      \u00b1 8g\", None))\n        self.comboBox_freq.setItemText(0, _translate(\"Reglages\", \"      100 Hz\", None))\n        self.comboBox_freq.setItemText(1, _translate(\"Reglages\", \"      200 Hz\", None))\n        self.comboBox_freq.setItemText(2, _translate(\"Reglages\", \"      400 Hz\", None))\n        self.comboBox_nbech.setItemText(0, _translate(\"Reglages\", \"        128\", None))\n        self.comboBox_nbech.setItemText(1, _translate(\"Reglages\", \"        256\", None))\n        self.comboBox_nbech.setItemText(2, _translate(\"Reglages\", \"        512\", None))\n        self.comboBox_nbech.setItemText(3, _translate(\"Reglages\", \"       1024\", None))\n        self.label_accel.setText(_translate(\"Reglages\", \"       Gamme d\\'acc\u00e9l\u00e9ration :    \", None))\n        self.label_freq.setText(_translate(\"Reglages\", \"Fr\u00e9quence d\\'\u00e9chantillionnage :\", None))\n        self.label_nbech.setText(_translate(\"Reglages\", \"     Nombre d\\'\u00e9chantillons :      \", None))\n        self.label_valfmax.setText(_translate(\"Reglages\", \"100 Hz\", None))\n        self.label_valresolution.setText(_translate(\"Reglages\", \"1 Hz\", None))\n\n",
+        "sequence": "TextInsert",
+        "index": "1.0",
+        "text_widget_class": "CodeViewText",
+        "tags": "()",
+        "time": "2018-03-18T09:55:42.105522"
+    },
+    {
+        "time": "2018-03-18T09:55:42.220487",
+        "view_class": "ShellView",
+        "sequence": "ShowView",
+        "view_id": "ShellView"
+    },
+    {
+        "time": "2018-03-18T09:55:42.224246",
+        "view_class": "HelpView",
+        "sequence": "ShowView",
+        "view_id": "HelpView"
+    },
+    {
+        "text_widget_id": 3037240144,
+        "text": "Python 3.4.2 (/usr/bin/python3)",
+        "sequence": "TextInsert",
+        "index": "1.0",
+        "text_widget_class": "ShellText",
+        "tags": "('welcome',)",
+        "text_widget_context": "shell",
+        "time": "2018-03-18T09:55:50.182543"
+    },
+    {
+        "text_widget_id": 3037240144,
+        "text": "\n",
+        "sequence": "TextInsert",
+        "index": "1.31",
+        "text_widget_class": "ShellText",
+        "tags": "('io',)",
+        "text_widget_context": "shell",
+        "time": "2018-03-18T09:55:50.203114"
+    },
+    {
+        "text_widget_id": 3037240144,
+        "text": ">>> ",
+        "sequence": "TextInsert",
+        "index": "2.0",
+        "text_widget_class": "ShellText",
+        "tags": "('toplevel', 'prompt')",
+        "text_widget_context": "shell",
+        "time": "2018-03-18T09:55:50.211034"
+    },
+    {
+        "time": "2018-03-18T09:55:50.251307",
+        "widget_id": 3058784560,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-18T09:56:03.981679",
+        "sequence": "<Button-1>",
+        "widget": ".#3038119664"
+    },
+    {
+        "time": "2018-03-18T09:56:04.003727",
+        "widget_id": 3058784560,
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench"
+    },
+    {
+        "time": "2018-03-18T09:56:06.060441",
+        "sequence": "<Button-1>",
+        "widget": ".#3038119664.#3038119664#3037178192"
+    },
+    {
+        "text_widget_id": 3037240144,
+        "text_widget_class": "ShellText",
+        "sequence": "TextDelete",
+        "time": "2018-03-18T09:56:06.166242",
+        "index1": "2.4",
+        "text_widget_context": "shell",
+        "index2": "3.0"
+    },
+    {
+        "text_widget_id": 3037240144,
+        "text": "%cd '/home/pi/IHM finale'\n%Run page_reglagesv2.py\n",
+        "sequence": "TextInsert",
+        "index": "2.4",
+        "text_widget_class": "ShellText",
+        "tags": "('automagic', 'toplevel', 'command')",
+        "text_widget_context": "shell",
+        "time": "2018-03-18T09:56:06.173014"
+    },
+    {
+        "text_widget_id": 3037240144,
+        "text_widget_class": "ShellText",
+        "sequence": "TextDelete",
+        "time": "2018-03-18T09:56:06.188098",
+        "index1": "4.0",
+        "text_widget_context": "shell",
+        "index2": "4.0"
+    },
+    {
+        "time": "2018-03-18T09:56:06.195924",
+        "cmd_line": "%cd '/home/pi/IHM finale'\n",
+        "sequence": "MagicCommand"
+    },
+    {
+        "command_text": "%cd '/home/pi/IHM finale'\n",
+        "sequence": "ShellCommand",
+        "time": "2018-03-18T09:56:06.206302"
+    },
+    {
+        "denied": "False",
+        "command_id": "run_current_script",
+        "sequence": "Command",
+        "time": "2018-03-18T09:56:06.207199"
+    },
+    {
+        "time": "2018-03-18T09:56:06.210878",
+        "widget_id": 3058784560,
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench"
+    },
+    {
+        "text_widget_id": 3037240144,
+        "text": ">>> ",
+        "sequence": "TextInsert",
+        "index": "3.0",
+        "text_widget_class": "ShellText",
+        "tags": "('toplevel', 'prompt')",
+        "text_widget_context": "shell",
+        "time": "2018-03-18T09:56:06.246200"
+    },
+    {
+        "text_widget_id": 3037240144,
+        "text_widget_class": "ShellText",
+        "sequence": "TextDelete",
+        "time": "2018-03-18T09:56:06.258884",
+        "index1": "4.0",
+        "text_widget_context": "shell",
+        "index2": "4.0"
+    },
+    {
+        "time": "2018-03-18T09:56:06.266518",
+        "cmd_line": "%Run page_reglagesv2.py\n",
+        "sequence": "MagicCommand"
+    },
+    {
+        "command_text": "%Run page_reglagesv2.py\n",
+        "sequence": "ShellCommand",
+        "time": "2018-03-18T09:56:07.813688"
+    },
+    {
+        "text_widget_id": 3037240144,
+        "text": ">>> ",
+        "sequence": "TextInsert",
+        "index": "4.0",
+        "text_widget_class": "ShellText",
+        "tags": "('toplevel', 'prompt')",
+        "text_widget_context": "shell",
+        "time": "2018-03-18T09:56:09.332242"
+    }
+]

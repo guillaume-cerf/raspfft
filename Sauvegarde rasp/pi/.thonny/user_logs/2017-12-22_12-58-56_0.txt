@@ -1,0 +1,300 @@
+[
+    {
+        "text_widget_class": "CodeViewText",
+        "editor_id": 3037975600,
+        "time": "2017-12-22T12:58:57.229730",
+        "sequence": "EditorTextCreated",
+        "editor_class": "Editor",
+        "text_widget_id": 3038030480
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "editor_id": 3037975600,
+        "time": "2017-12-22T12:58:57.246059",
+        "filename": "/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/IHM/mainIHM.py",
+        "sequence": "Open",
+        "editor_class": "Editor",
+        "text_widget_id": 3038030480
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "index2": "2.0",
+        "time": "2017-12-22T12:58:58.288978",
+        "index1": "1.0",
+        "sequence": "TextDelete",
+        "text_widget_id": 3038030480
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "index": "1.0",
+        "time": "2017-12-22T12:58:58.585576",
+        "tags": "()",
+        "text": "import sys #impose par QT\nimport os\nfrom PyQt4.QtCore import * #impose par QT\nfrom PyQt4.QtGui import * #impose par QT\nfrom PyQt4 import *\n#import tkinter\nfrom page_reglages import Ui_Reglages\nfrom page_acquisitionzaloeil import Ui_Acquisition\nfrom numpy import linspace,sin\nfrom numpy import fft  #OU from scipy.fftpack import fft #on fait enuite uniquement fft(blabla)\nfrom random import *  #pour les donnees fictives\n\n##------------ Fenetre ACQUISITION avec relations\n\nclass Interface_Acquisition(QWidget): #pour une autre fenetre, ca peut etre QDialog ou QMainWindow ou QWidget\n    def __init__(self):\n        QWidget.__init__(self) #Appel explicite du constructeur de la classe mere, impose par python\n\n        #Instanciation et initialisation de l'interface Qt\n        self.ui = Ui_Acquisition() #class creee par Qt METTRE UN VRAI NOM\n        self.ui.setupUi(self)       #on lance la fonction definie dans la class\n\n        #initialisation parametres\n        global etat_comboBox_freq, etat_comboBox_accel   #en global pour dialoguer entre acquisition et reglages\n\n        self.ui.checkBox_accelx.setChecked(True) #par defaut coche ---- setChecked ou setCheckState\n        self.ui.checkBox_accely.setChecked(True) #par defaut coche\n        self.ui.checkBox_accelz.setCheckState(False) #par defaut non coche\n        self.ui.comboBox_FourrierTempo.setCurrentIndex(1) #par defaut indice 1 donc temporel\n        self.ui.progressBar.setValue(8)  #pour dire quelle valur mettre ou .value() pour consulter\n        etat_comboBox_freq = 0 #par defaut 200Hz\n        etat_comboBox_accel = 0 #par defaut 2g\n\n        self.T =[]  #ensemble des temps\n        self.F=[]   #futur ensemble des frequences pour fft\n        self.A1=[]  #ensemble des accel en x\n        self.A2=[]  #ensemble des accel en y\n        self.A3=[]  #ensemble des accel en z\n        self.Atot=[] #equivalent sortie accelero\n        self.TF1 =[] #futur ensemble des TF pour A1\n        self.TF2 =[] #futur ensemble des TF pour A2\n        self.TF3 =[] #futur ensemble des TF pour A3\n        \n        self.ui.matplotlibwidget.axes.set_title('Accelerations')\n        #self.ui.matplotlibwidget.axes.set_ylabel('log') #ou xscale\n        \n        # definition relations\n        self.connect(self.ui.PushButton_Fermer, SIGNAL('clicked()'), self.action_Fermer)\n        self.connect(self.ui.PushButton_Nouveau, SIGNAL('clicked()'), self.action_Nouveau)\n        self.connect(self.ui.PushButton_Reglages, SIGNAL('clicked()'), self.action_Reglages)\n        self.connect(self.ui.PushButton_Exporter, SIGNAL('clicked()'), self.action_Exporter)\n        self.connect(self.ui.comboBox_FourrierTempo, SIGNAL('currentIndexChanged(int)'), self.action_FourrierTempo)\n        self.connect(self.ui.checkBox_accelx, SIGNAL('clicked()'), self.action_accelxyz) #ou stateChanged(int)\n        self.connect(self.ui.checkBox_accely, SIGNAL('clicked()'), self.action_accelxyz)\n        self.connect(self.ui.checkBox_accelz, SIGNAL('clicked()'), self.action_accelxyz)\n        \n    def action_Fermer(self):\n        global interface\n        print('go fermer')\n        interface=0 #sans espace\n        \n    def action_Nouveau(self):\n        print('go nouveau')\n        self.acquerir()    \n        self.afficher()\n        \n    def action_Reglages(self):\n        global interface2\n        print('go reglages')\n        interface2 = Interface_Reglages()\n        interface2.show()\n        \n    def action_Exporter(self):\n        print('go exporter')\n        self.memorise_txt()\n        os.popen(\"recuperation_donnees.txt\")\n        \n    def action_FourrierTempo(self):\n        print(self.ui.comboBox_FourrierTempo.currentIndex())  # .currentText (0 ou 1) ou .currentIndex\n        self.afficher()\n        \n    def action_accelxyz(self):\n        print(self.ui.checkBox_accelx.checkState()) #renvoie 0 ou 2\n        print(self.ui.checkBox_accely.checkState())\n        print(self.ui.checkBox_accelz.checkState())\n        self.afficher()\n\n\n    def acquerir(self):\n        #test matplotlib\n        N=randint(50,60)\n        tmax = 2\n        fe=(N-1)/tmax\n        self.T = linspace(0,tmax,N)\n        self.F = linspace(0,fe,N)\n        self.F=self.F[0:N//2] #on coupe a la moitie pour non redondance dans l'affichage\n            \n\n        A = self.calcul_sin(self.T) #acquisition donnees fictives\n        self.A1=A[0]  #accel en x\n        self.A2=A[1]\n        self.A3=A[2]\n        self.Atot=A[3]  #cumul accel type sortie accelero\n\n        self.TF1=2*abs(fft.fft(self.A1))/N  #TF de l'acceleration en x\n        self.TF1=self.TF1[0:N//2]\n        self.TF2=2*abs(fft.fft(self.A2))/N  #TF de l'acceleration en y\n        self.TF2=self.TF2[0:N//2]\n        self.TF3=2*abs(fft.fft(self.A3))/N  #TF de l'acceleration en z\n        self.TF3=self.TF3[0:N//2]\n\n        for i in range(N):   ##on raccourci les nombres en CS\n            self.T[i]=self.nCS(self.T[i])\n            if i<N//2:\n                self.F[i]=self.nCS(self.F[i])\n                self.TF1[i]=self.nCS(self.TF1[i])\n                self.TF2[i]=self.nCS(self.TF2[i])\n                self.TF3[i]=self.nCS(self.TF3[i])\n        \n    def afficher(self):\n        \n        self.X1=[]\n        self.X2=[]\n        self.X3=[]\n        self.Y1=[] #on affichera tout le temps Y1,Y2,Y3 quitte a etre vide\n        self.Y2=[]\n        self.Y3=[]\n        self.c1=self.ui.checkBox_accelx.checkState() #lecture etat checkbox 0 ou 2\n        self.c2=self.ui.checkBox_accely.checkState()\n        self.c3=self.ui.checkBox_accelz.checkState()\n        self.c4=self.ui.comboBox_FourrierTempo.currentIndex() #0 pour Fourrier et 1 pour temporel\n        \n        if self.c1==2 and self.c4==1:  #si accelx coche et temporel\n            self.Y1=self.A1\n            self.X1=self.T\n        if self.c2==2 and self.c4==1:\n            self.Y2=self.A2\n            self.X2=self.T\n        if self.c3==2 and self.c4==1:\n            self.Y3=self.A3\n            self.X3=self.T\n\n        if self.c1==2 and self.c4==0:  #si accelx coche et Fourrier\n            self.Y1=self.TF1\n            self.X1=self.F\n        if self.c2==2 and self.c4==0:\n            self.Y2=self.TF2\n            self.X2=self.F\n        if self.c3==2 and self.c4==0:\n            self.Y3=self.TF3\n            self.X3=self.F\n\n            \n        self.ui.matplotlibwidget.axes.hold(False) #on tej le plot precedent   \n        self.ui.matplotlibwidget.axes.plot(self.X1,self.Y1,'r.-')   # . pour avoir les points et - pour les relier --> par exemple'r.-'  \n        self.ui.matplotlibwidget.axes.hold(True) #on maintient\n        self.ui.matplotlibwidget.axes.plot(self.X2,self.Y2,'b.-')\n        self.ui.matplotlibwidget.axes.hold(True)\n        self.ui.matplotlibwidget.axes.plot(self.X3,self.Y3,'g.-')\n        \n        self.ui.matplotlibwidget.draw() ##important\n        \n    def calcul_sin(self,T):\n        A1=[]\n        A2=[]  #sont des intermediaires de la fonction (pas de self)\n        A3=[]\n        L=[]\n        amplitude=[2*random(),4*random(),3*random()]\n        for i in T:\n            a1,a2,a3=self.nCS(amplitude[0]*sin(3*i)),self.nCS(amplitude[1]*sin(6*i+1)),self.nCS(amplitude[2]*sin(12*i+2))  #2pi/T = 3 ie T=2\n            A1.append(a1)\n            A2.append(a2)\n            A3.append(a3)\n            L.append([a1,a2,a3]) #donnees fictives accelero\n        return [A1,A2,A3,L]\n    \n    def nCS(self,nombre):\n        \"\"\"reduit les chiffres signicatifs a n\"\"\"\n        n=3\n        facteur=10**n\n        return int(facteur*nombre)/facteur\n    \n    def memorise_txt(self): #il faut avoir fait nouveau pour tester\n        \"\"\"passe les donnees dans un fichier txt\"\"\"\n        fich=open('recuperation_donnees.txt','w')\n        fich.write('t(s)                Ax(m/s\u00b2)            Ay(m/s\u00b2)               Az(m/s\u00b2)             F(Hz)              TF(Ax)               TF(Ay)          TF(Az)\\n')\n        for i in range(len(self.T)):\n            a,b,c,d=str(self.T[i]),str(self.Atot[i][0]),str(self.Atot[i][1]),str(self.Atot[i][2])\n            if i<len(self.F):\n                e,f,g,h=str(self.F[i]),str(self.TF1[i]),str(self.TF2[i]),str(self.TF3[i])\n            else:\n                e,f,g,h='','','',''\n            fich.write(a)\n            fich.write('                ') ##avec 4 tabulations tout le temps pour bien separer et avoir un passage propre sur excel\n            fich.write(b)\n            fich.write('                ')\n            fich.write(c)\n            fich.write('                ')\n            fich.write(d)\n            fich.write('                ')\n            fich.write(e)\n            fich.write('                ')\n            fich.write(f)\n            fich.write('                ')\n            fich.write(g)\n            fich.write('                ')\n            fich.write(h)\n            fich.write('\\n')\n        fich.close()\n\n\n\n###----------------Fenetre REGLAGES avec relations\n        \nclass Interface_Reglages(QWidget): #pour une autre fenetre, ca peut etre QDialog ou QMainWindow ou QWidget\n    def __init__(self):\n        QWidget.__init__(self) #Appel explicite du constructeur de la classe mere, impose par python\n\n        #Instanciation et initialisation de l'interface Qt\n        self.ui2 = Ui_Reglages()\n        self.ui2.setupUi(self)\n        #initialisation combobox\n        self.ui2.comboBox_freq.setCurrentIndex(etat_comboBox_freq) #pour memoriser ce qui a ete fait avant\n        self.ui2.comboBox_accel.setCurrentIndex(etat_comboBox_accel)\n\n        self.connect(self.ui2.PushButton_retour, SIGNAL('clicked()'), self.action_retour)\n        self.connect(self.ui2.PushButton_valider, SIGNAL('clicked()'), self.action_valider)\n\n    def action_retour(self):\n        global interface2\n        print('go retour')\n        interface2=0 #sans enregistrer les modif\n\n    def action_valider(self):\n        global etat_comboBox_freq, etat_comboBox_accel, interface2\n        print('go valider')\n        etat_comboBox_freq = self.ui2.comboBox_freq.currentIndex()\n        etat_comboBox_accel = self.ui2.comboBox_accel.currentIndex()\n        print(etat_comboBox_accel)\n        print(etat_comboBox_freq)\n        interface2=0  #il faudra faire de vraies modif sur l'accelero\n    \n###Reglages.showFullScreen()\n###Reglages.showMaximized()\n\n#C:\\Users\\cyril\\Downloads\\WinPython-32bit-3.3.5.9\\python-3.3.5\\Lib\\site-packages\\PyQt4\\doc\\html       \n\n\n\n###------------- Lesture du MAIN pour lancer l'algo\n\n#Test de l'application\nif __name__==\"__main__\":\n    appUI = QApplication(sys.argv) #Instanciation de l'application (pour intercepter les mouvements de souris etc...)\n    interface = Interface_Acquisition() #Instanciation de l'interface\n    #interface = Interface_Reglages()  #l'un ou l'autre pour les tests\n    ##interface.resize(680,320)\n    ##interface.showMaximized()  ##pas utile car n'est lu qu'une fois\n    interface.show() #Affichage de l'interface\n    sys.exit(appUI.exec_()) #Execution de l'application\n    \n",
+        "sequence": "TextInsert",
+        "text_widget_id": 3038030480
+    },
+    {
+        "view_id": 3037894544,
+        "view_class": "ShellView",
+        "sequence": "ShowView",
+        "time": "2017-12-22T12:58:58.782777"
+    },
+    {
+        "text_widget_class": "ShellText",
+        "index": "1.0",
+        "time": "2017-12-22T12:59:07.562682",
+        "tags": "('welcome',)",
+        "text": "Python 3.4.2 (/usr/bin/python3)",
+        "text_widget_context": "shell",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037896048
+    },
+    {
+        "text_widget_class": "ShellText",
+        "index": "1.31",
+        "time": "2017-12-22T12:59:07.572516",
+        "tags": "('io',)",
+        "text": "\n",
+        "text_widget_context": "shell",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037896048
+    },
+    {
+        "text_widget_class": "ShellText",
+        "index": "2.0",
+        "time": "2017-12-22T12:59:07.580467",
+        "tags": "('toplevel', 'prompt')",
+        "text": ">>> ",
+        "text_widget_context": "shell",
+        "sequence": "TextInsert",
+        "text_widget_id": 3037896048
+    },
+    {
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T12:59:07.614621",
+        "widget_id": 3059390480
+    },
+    {
+        "denied": "False",
+        "command_id": "OpenFindDialog",
+        "time": "2017-12-22T12:59:09.857627",
+        "sequence": "Command"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T12:59:10.969059",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<Button-1>",
+        "widget_class": "Button",
+        "time": "2017-12-22T12:59:15.694366",
+        "widget_id": 3019511792
+    },
+    {
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T12:59:18.217171",
+        "widget_id": 3059390480
+    },
+    {
+        "denied": "True",
+        "command_id": "save_file",
+        "time": "2017-12-22T12:59:19.026194",
+        "sequence": "Command"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T12:59:19.959064",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T12:59:20.131275",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T12:59:20.249799",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T12:59:27.135934",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:00:52.213969",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:00:53.176009",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:00:53.299219",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:02:37.587606",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:02:38.421407",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:02:40.146019",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:02:40.305263",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:03:04.045049",
+        "widget_id": 3059390480
+    },
+    {
+        "denied": "False",
+        "command_id": "OpenFindDialog",
+        "time": "2017-12-22T13:03:24.437204",
+        "sequence": "Command"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:03:25.533844",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<Button-1>",
+        "widget_class": "Button",
+        "time": "2017-12-22T13:03:37.431682",
+        "widget_id": 3019010160
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "index2": "186.47",
+        "time": "2017-12-22T13:03:37.541527",
+        "index1": "186.46",
+        "sequence": "TextDelete",
+        "text_widget_id": 3038030480
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "index": "186.46",
+        "time": "2017-12-22T13:03:37.567229",
+        "tags": "None",
+        "text": "2",
+        "sequence": "TextInsert",
+        "text_widget_id": 3038030480
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "index2": "186.67",
+        "time": "2017-12-22T13:03:37.595626",
+        "index1": "186.66",
+        "sequence": "TextDelete",
+        "text_widget_id": 3038030480
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "index": "186.66",
+        "time": "2017-12-22T13:03:37.621768",
+        "tags": "None",
+        "text": "2",
+        "sequence": "TextInsert",
+        "text_widget_id": 3038030480
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "index2": "186.90",
+        "time": "2017-12-22T13:03:37.650118",
+        "index1": "186.89",
+        "sequence": "TextDelete",
+        "text_widget_id": 3038030480
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "index": "186.89",
+        "time": "2017-12-22T13:03:37.675997",
+        "tags": "None",
+        "text": "2",
+        "sequence": "TextInsert",
+        "text_widget_id": 3038030480
+    },
+    {
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:03:39.642020",
+        "widget_id": 3059390480
+    },
+    {
+        "text_widget_class": "CodeViewText",
+        "editor_id": 3037975600,
+        "time": "2017-12-22T13:03:40.552155",
+        "filename": "/media/pi/USB DISK/ENSAM/GIE2/Projet Raspberry/Programmation/IHM/mainIHM.py",
+        "sequence": "Save",
+        "editor_class": "Editor",
+        "text_widget_id": 3038030480
+    },
+    {
+        "denied": "False",
+        "command_id": "save_file",
+        "time": "2017-12-22T13:03:40.582430",
+        "sequence": "Command"
+    },
+    {
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:03:41.428256",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:03:42.216054",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:03:42.336676",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusIn>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:18:26.155274",
+        "widget_id": 3059390480
+    },
+    {
+        "sequence": "<FocusOut>",
+        "widget_class": "Workbench",
+        "time": "2017-12-22T13:18:27.439805",
+        "widget_id": 3059390480
+    }
+]

@@ -1,0 +1,1 @@
+t(s);Ax(m/s2);Ay(m/s2);Az(m/s2);F(Hz);TF(Ax);TF(Ay);TF(Az)

@@ -1,0 +1,1 @@
+gamme acceleration : +-2g ;    frequence echantillonnage : 100Hz ;   Nombre de triplets [x,y,z] : 128t(s);Ax(g);Ay(g);Az(g);F(Hz);TF(Ax);TF(Ay);TF(Az)
